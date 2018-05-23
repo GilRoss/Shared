@@ -41,9 +41,9 @@ public:
         , _nSegmentIdx(0)
         , _nCycle(0)
         , _nStepIdx(0)
-        , _nRunTime_ms(0)
-        , _nStepTime_ms(0)
-        , _nHoldTime_ms(0)
+        , _nRunTimer_ms(0)
+        , _nStepTimer_ms(0)
+        , _nHoldTimer_ms(0)
 		, _nTemperature_mC(0)
         , _nNumOpticsRecs(0)
         , _nNumThermalRecs(0)
@@ -65,12 +65,12 @@ public:
         _nSegmentIdx        = *pSrc++;
         _nCycle             = *pSrc++;
         _nStepIdx           = *pSrc++;
-        _nRunTime_ms        = *pSrc++;
-        _nStepTime_ms       = *pSrc++;
-		_nHoldTime_ms	    = *pSrc++;
+        _nRunTimer_ms       = *pSrc++;
+        _nStepTimer_ms      = *pSrc++;
+		_nHoldTimer_ms	    = *pSrc++;
 		_nTemperature_mC    = *pSrc++;
 		_nNumThermalRecs    = *pSrc++;
-		_nNumOpticsRecs     = *pSrc++;
+        _nNumOpticsRecs     = *pSrc++;
   	}
 
     virtual void     operator>>(uint8_t* pData)
@@ -81,9 +81,9 @@ public:
         *pDst++ = _nSegmentIdx;
         *pDst++ = _nCycle;
         *pDst++ = _nStepIdx;
-        *pDst++ = _nRunTime_ms;
-        *pDst++ = _nStepTime_ms;
-		*pDst++ = _nHoldTime_ms;
+        *pDst++ = _nRunTimer_ms;
+        *pDst++ = _nStepTimer_ms;
+		*pDst++ = _nHoldTimer_ms;
 		*pDst++ = _nTemperature_mC;
 		*pDst++ = _nNumThermalRecs;
 		*pDst++ = _nNumOpticsRecs;
@@ -91,23 +91,27 @@ public:
     
 	void        SetTemperature(uint32_t n)		        { _nTemperature_mC = n; }
 	uint32_t    GetTemperature() const			        { return _nTemperature_mC; }
-	void        SetRunningFlg(bool b)                   {_bRunning = b;}
+    void        SetRunningFlg(bool b)                   {_bRunning = b;}
     bool        GetRunningFlg() const                   {return _bRunning;}
-	void        SetSegmentIdx(uint32_t nIdx)            { _nSegmentIdx = nIdx; }
-	uint32_t    GetSegmentIdx() const                   { return _nSegmentIdx; }
+    void        SetTempStableFlg(bool b)                {_bTempStable = b;}
+    bool        GetTempStableFlg() const                {return _bTempStable;}
+    void        SetStableTimer(uint32_t t)              { _nStableTimer_ms = t; }
+    uint32_t    GetStableTimer() const                  { return _nStableTimer_ms; }
+    void        SetSegmentIdx(uint32_t nIdx)            { _nSegmentIdx = nIdx; }
+    uint32_t    GetSegmentIdx() const                   { return _nSegmentIdx; }
     void        SetCycle(uint32_t nCyc)                 {_nCycle = nCyc;}
     uint32_t    GetCycle() const                        {return _nCycle;}
     void        SetStepIdx(uint32_t nIdx)               {_nStepIdx = nIdx;}
     uint32_t    GetStepIdx() const                      {return _nStepIdx;}
-    void        SetStepTime(uint32_t nTime)             {_nStepTime_ms = nTime;}
-    uint32_t    GetStepTime() const                     {return _nStepTime_ms;}
-    void        AddStepTime(uint32_t nTime)             {_nStepTime_ms += nTime;}
-    void        SetHoldTime(uint32_t nTime)             {_nHoldTime_ms = nTime;}
-    uint32_t    GetHoldTime() const                     {return _nHoldTime_ms;}
-    void        AddHoldTime(uint32_t nTime)             {_nHoldTime_ms += nTime;}
-    void		SetRunTime(uint32_t nTime)              {_nRunTime_ms = nTime;}
-	uint32_t	GetRunTime() const						{ return _nRunTime_ms; }
-	void		AddRunTime(uint32_t nTime)				{ _nRunTime_ms += nTime; }
+    void        SetStepTimer(uint32_t nTime)            {_nStepTimer_ms = nTime;}
+    uint32_t    GetStepTimer() const                    {return _nStepTimer_ms;}
+    void        AddStepTimer(uint32_t nTime)            {_nStepTimer_ms += nTime;}
+    void        SetHoldTimer(uint32_t nTime)            {_nHoldTimer_ms = nTime;}
+    uint32_t    GetHoldTimer() const                    {return _nHoldTimer_ms;}
+    void        AddHoldTimer(uint32_t nTime)            {_nHoldTimer_ms += nTime;}
+    void		SetRunTimer(uint32_t nTime)             {_nRunTimer_ms = nTime;}
+	uint32_t	GetRunTimer() const						{ return _nRunTimer_ms; }
+	void		AddRunTimer(uint32_t nTime)				{ _nRunTimer_ms += nTime; }
 	uint32_t	GetNumThermalRecs() const				{ return _nNumThermalRecs; }
 	void		SetNumThermalRecs(uint32_t n)			{ _nNumThermalRecs = n; }
 	uint32_t	GetNumOpticsRecs() const				{ return _nNumOpticsRecs; }
@@ -117,16 +121,20 @@ public:
     void        NextStep()
                 {
                     _nStepIdx++;
-                    _nStepTime_ms = 0;
-                    _nHoldTime_ms = 0;
+                    _nStepTimer_ms = 0;
+                    _nHoldTimer_ms = 0;
+                    _bTempStable = false;
+                    _nStableTimer_ms = 0;
                 }
     
     void        NextCycle()
                 {
                     _nCycle++;
                     _nStepIdx = 0;
-                    _nStepTime_ms = 0;
-                    _nHoldTime_ms = 0;
+                    _nStepTimer_ms = 0;
+                    _nHoldTimer_ms = 0;
+                    _bTempStable = false;
+                    _nStableTimer_ms = 0;
                 }
     
     void        NextSegment()
@@ -134,19 +142,23 @@ public:
                     _nSegmentIdx++;
                     _nCycle = 0;
                     _nStepIdx = 0;
-                    _nStepTime_ms = 0;
-                    _nHoldTime_ms = 0;
+                    _nStepTimer_ms = 0;
+                    _nHoldTimer_ms = 0;
+                    _bTempStable = false;
+                    _nStableTimer_ms = 0;
                 }
     
     void        ResetForNewRun()
                 {
                     _bRunning = false;
+                    _bTempStable = false;
+                    _nStableTimer_ms = 0;
                     _nSegmentIdx = 0;
                     _nCycle = 0;
                     _nStepIdx = 0;
-                    _nStepTime_ms = 0;
-                    _nHoldTime_ms = 0;
-                    _nRunTime_ms = 0;
+                    _nStepTimer_ms = 0;
+                    _nHoldTimer_ms = 0;
+                    _nRunTimer_ms = 0;
                     _nNumThermalRecs = 0;
                     _nNumOpticsRecs = 0;
                 }
@@ -155,12 +167,14 @@ protected:
   
 private:
     bool            _bRunning;
+    bool            _bTempStable;
+    uint32_t        _nStableTimer_ms;
     uint32_t        _nSegmentIdx;
     uint32_t        _nCycle;
     uint32_t        _nStepIdx;
-    uint32_t        _nRunTime_ms;
-    uint32_t        _nStepTime_ms;
-	uint32_t        _nHoldTime_ms;
+    uint32_t        _nRunTimer_ms;
+    uint32_t        _nStepTimer_ms;
+	uint32_t        _nHoldTimer_ms;
 	uint32_t        _nTemperature_mC;
     uint32_t        _nNumOpticsRecs;
 	uint32_t        _nNumThermalRecs;

@@ -15,7 +15,7 @@ public:
     Step()
         :StreamingObj(MakeObjId('S','t','e','p'))
         , _nTargetTemp_mC(0)
-        , _nHoldTime_ms(0)
+        , _nHoldTimer_ms(0)
         , _bMelt(false)
         , _nRampRate_mCPerSec(0)
     {
@@ -25,8 +25,8 @@ public:
     int32_t     GetRampRate() const                     {return _nRampRate_mCPerSec;}
     void        SetTargetTemp(int32_t nTargetTemp_mC)   {_nTargetTemp_mC = nTargetTemp_mC;}
     int32_t     GetTargetTemp() const                   {return _nTargetTemp_mC;}
-    void        SetHoldTime(uint32_t nHoldTime_ms)      {_nHoldTime_ms = nHoldTime_ms;}
-    uint32_t    GetHoldTime() const                     {return _nHoldTime_ms;}
+    void        SetHoldTimer(uint32_t nHoldTime_ms)     {_nHoldTimer_ms = nHoldTime_ms;}
+    uint32_t    GetHoldTimer() const                    {return _nHoldTimer_ms;}
 	void        SetMeltFlg(bool b)						{ _bMelt = b; }
 	bool        GetMeltFlg() const						{ return _bMelt; }
 	uint32_t    GetNumOpticsChans()					    { return sizeof(_arReadChanFlgs); }
@@ -37,7 +37,7 @@ public:
                               bool bMeasureFluorescence = false, int32_t nRampRate_mCPerSec = 0)
                 {
                     _nTargetTemp_mC     = nTargetTemp_mC;
-                    _nHoldTime_ms       = nHoldTime_ms;
+                    _nHoldTimer_ms      = nHoldTime_ms;
 					_bMelt				= bMeasureFluorescence;
                     _nRampRate_mCPerSec = nRampRate_mCPerSec;
                 }
@@ -51,7 +51,7 @@ public:
     {
         StreamingObj::operator<<(pData);
         _nTargetTemp_mC     = *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 0]);
-        _nHoldTime_ms       = *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 4]);
+        _nHoldTimer_ms      = *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 4]);
 		_bMelt				= *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 8]) == 1;
         _nRampRate_mCPerSec = *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 12]);
 		
@@ -67,7 +67,7 @@ public:
     {
         StreamingObj::operator>>(pData);
         *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 0])  = _nTargetTemp_mC;
-        *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 4])  = _nHoldTime_ms;
+        *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 4])  = _nHoldTimer_ms;
         *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 8])  = _bMelt ? 1 : 0;
 		*((uint32_t*)&pData[StreamingObj::GetStreamSize() + 12]) = _nRampRate_mCPerSec;
 
@@ -83,7 +83,7 @@ protected:
   
 private:
     int32_t     _nTargetTemp_mC;
-    uint32_t    _nHoldTime_ms;
+    uint32_t    _nHoldTimer_ms;
 	bool        _arReadChanFlgs[kNumOpticChans];
 	bool        _bMelt;
 	int32_t     _nRampRate_mCPerSec;
