@@ -51,17 +51,19 @@ public:
 	virtual void     operator<<(const uint8_t* pData)
     {
         StreamingObj::operator<<(pData);
-		_nSize      = *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 0]);
-		_nTransId   = *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 4]);
-		_nError     = *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 8]);
+        uint32_t*   pSrc = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
+		_nSize      = swap_uint32(*pSrc++);
+		_nTransId   = swap_uint32(*pSrc++);
+		_nError     = swap_uint32(*pSrc++);
     }
 
     virtual void     operator>>(uint8_t* pData)
     {
         StreamingObj::operator>>(pData);
-		*((uint32_t*)&pData[StreamingObj::GetStreamSize() + 0]) = _nSize;
-		*((uint32_t*)&pData[StreamingObj::GetStreamSize() + 4]) = _nTransId;
-		*((uint32_t*)&pData[StreamingObj::GetStreamSize() + 8]) = _nError;
+        uint32_t*   pDst = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
+		*pDst++ = swap_uint32(_nSize);
+		*pDst++ = swap_uint32(_nTransId);
+		*pDst++ = swap_uint32(_nError);
     }
         
 protected:
@@ -148,18 +150,18 @@ public:
 	{
 		HostMsg::operator<<(pData);
 		uint32_t*	pSrc = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
-        _nSiteIdx		        = *pSrc++;
-        _nFirstRecToReadIdx	    = *pSrc++;
-        _nNumRecsToRead		    = *pSrc++;
+        _nSiteIdx		        = swap_uint32(*pSrc++);
+        _nFirstRecToReadIdx	    = swap_uint32(*pSrc++);
+        _nNumRecsToRead		    = swap_uint32(*pSrc++);
 	}
 
 	virtual void     operator>>(uint8_t* pData)
 	{
 		HostMsg::operator>>(pData);
 		uint32_t*	pDst = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
-        *pDst++ = _nSiteIdx;
-        *pDst++ = _nFirstRecToReadIdx;
-        *pDst++ = _nNumRecsToRead;
+        *pDst++ = swap_uint32(_nSiteIdx);
+        *pDst++ = swap_uint32(_nFirstRecToReadIdx);
+        *pDst++ = swap_uint32(_nNumRecsToRead);
 	}
 
 protected:
@@ -202,14 +204,14 @@ public:
 		HostMsg::operator<<(pData);
 		uint32_t*	pSrc = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
 
-		_arOpticsRecs.resize(*pSrc++);
+		_arOpticsRecs.resize(swap_uint32(*pSrc++));
 		for (int i = 0; i < (int)_arOpticsRecs.size(); i++)
 		{
-			_arOpticsRecs[i]._nTimeTag_ms		= *pSrc++;
-			_arOpticsRecs[i]._nCycleIdx	        = *pSrc++;
-			_arOpticsRecs[i]._nDarkRead		    = *pSrc++;
-			_arOpticsRecs[i]._nIlluminatedRead	= *pSrc++;
-			_arOpticsRecs[i]._nShuttleTemp_mC	= *pSrc++;
+			_arOpticsRecs[i]._nTimeTag_ms		= swap_uint32(*pSrc++);
+			_arOpticsRecs[i]._nCycleIdx	        = swap_uint32(*pSrc++);
+			_arOpticsRecs[i]._nDarkRead		    = swap_uint32(*pSrc++);
+			_arOpticsRecs[i]._nIlluminatedRead	= swap_uint32(*pSrc++);
+			_arOpticsRecs[i]._nShuttleTemp_mC	= swap_uint32(*pSrc++);
 		}
 	}
 
@@ -218,14 +220,14 @@ public:
 		HostMsg::operator>>(pData);
 		uint32_t*	pDst = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
 
-		*pDst++ = (uint32_t)_arOpticsRecs.size();
+		*pDst++ = swap_uint32(_arOpticsRecs.size());
 		for (int i = 0; i < (int)_arOpticsRecs.size(); i++)
 		{
-			*pDst++ = _arOpticsRecs[i]._nTimeTag_ms;
-			*pDst++ = _arOpticsRecs[i]._nCycleIdx;
-			*pDst++ = _arOpticsRecs[i]._nDarkRead;
-			*pDst++ = _arOpticsRecs[i]._nIlluminatedRead;
-			*pDst++ = _arOpticsRecs[i]._nShuttleTemp_mC;
+			*pDst++ = swap_uint32(_arOpticsRecs[i]._nTimeTag_ms);
+			*pDst++ = swap_uint32(_arOpticsRecs[i]._nCycleIdx);
+			*pDst++ = swap_uint32(_arOpticsRecs[i]._nDarkRead);
+			*pDst++ = swap_uint32(_arOpticsRecs[i]._nIlluminatedRead);
+			*pDst++ = swap_uint32(_arOpticsRecs[i]._nShuttleTemp_mC);
 		}
 	}
 
@@ -267,14 +269,15 @@ public:
 		HostMsg::operator<<(pData);
 		uint32_t*	pSrc = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
 
-		_arThermalRecs.resize(*pSrc++);
+		_arThermalRecs.resize(swap_uint32(*pSrc++));
 		for (int i = 0; i < (int)_arThermalRecs.size(); i++)
 		{
-			_arThermalRecs[i]._nTimeTag_ms		= *pSrc++;
-			_arThermalRecs[i]._nBlockTemp_mC	= *pSrc++;
-			_arThermalRecs[i]._nSinkTemp_mC		= *pSrc++;
-			_arThermalRecs[i]._nSampleTemp_mC	= *pSrc++;
-			_arThermalRecs[i]._nCurrent_mA		= *pSrc++;
+			_arThermalRecs[i]._nTimeTag_ms	= swap_uint32(*pSrc++);
+			_arThermalRecs[i]._nChan1_mC	= swap_uint32(*pSrc++);
+			_arThermalRecs[i]._nChan2_mC	= swap_uint32(*pSrc++);
+			_arThermalRecs[i]._nChan3_mC	= swap_uint32(*pSrc++);
+			_arThermalRecs[i]._nChan4_mC	= swap_uint32(*pSrc++);
+			_arThermalRecs[i]._nCurrent_mA	= swap_uint32(*pSrc++);
 		}
 	}
 
@@ -283,14 +286,15 @@ public:
 		HostMsg::operator>>(pData);
 		uint32_t*	pDst = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
 
-		*pDst++ = (uint32_t)_arThermalRecs.size();
+		*pDst++ = swap_uint32((uint32_t)_arThermalRecs.size());
 		for (int i = 0; i < (int)_arThermalRecs.size(); i++)
 		{
-			*pDst++ = _arThermalRecs[i]._nTimeTag_ms;
-			*pDst++ = _arThermalRecs[i]._nBlockTemp_mC;
-			*pDst++ = _arThermalRecs[i]._nSinkTemp_mC;
-			*pDst++ = _arThermalRecs[i]._nSampleTemp_mC;
-			*pDst++ = _arThermalRecs[i]._nCurrent_mA;
+			*pDst++ = swap_uint32(_arThermalRecs[i]._nTimeTag_ms);
+			*pDst++ = swap_uint32(_arThermalRecs[i]._nChan1_mC);
+			*pDst++ = swap_uint32(_arThermalRecs[i]._nChan2_mC);
+			*pDst++ = swap_uint32(_arThermalRecs[i]._nChan3_mC);
+			*pDst++ = swap_uint32(_arThermalRecs[i]._nChan4_mC);
+			*pDst++ = swap_uint32(_arThermalRecs[i]._nCurrent_mA);
 		}
 	}
 
@@ -385,20 +389,20 @@ public:
     {
         HostMsg::operator<<(pData);
 		uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_nSiteIdx	    = *pSrc++;
-		_nChanIdx	    = *pSrc++;
-		_nIntensity	    = *pSrc++;
-		_nDuration_us	= *pSrc++;
+		_nSiteIdx	    = swap_uint32(*pSrc++);
+		_nChanIdx	    = swap_uint32(*pSrc++);
+		_nIntensity	    = swap_uint32(*pSrc++);
+		_nDuration_us	= swap_uint32(*pSrc++);
 	}
 
     virtual void     operator>>(uint8_t* pData)
     {
 		HostMsg::operator>>(pData);
 		uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		*pDst++ = _nSiteIdx;
-		*pDst++ = _nChanIdx;
-		*pDst++ = _nIntensity;
-		*pDst++ = _nDuration_us;
+		*pDst++ = swap_uint32(_nSiteIdx);
+		*pDst++ = swap_uint32(_nChanIdx);
+		*pDst++ = swap_uint32(_nIntensity);
+		*pDst++ = swap_uint32(_nDuration_us);
 	}
 
 protected:
@@ -443,16 +447,16 @@ public:
     {
         HostMsg::operator<<(pData);
 		uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_nSiteIdx	    = *pSrc++;
-		_nSetpoint_mC	= *pSrc++;
+		_nSiteIdx	    = swap_uint32(*pSrc++);
+		_nSetpoint_mC	= swap_uint32(*pSrc++);
 	}
 
     virtual void     operator>>(uint8_t* pData)
     {
 		HostMsg::operator>>(pData);
 		uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		*pDst++ = _nSiteIdx;
-		*pDst++ = _nSetpoint_mC;
+		*pDst++ = swap_uint32(_nSiteIdx);
+		*pDst++ = swap_uint32(_nSetpoint_mC);
 	}
 
 protected:
@@ -499,18 +503,18 @@ public:
     {
         HostMsg::operator<<(pData);
 		uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_nKp	= *pSrc++;
-		_nKi	= *pSrc++;
-		_nKd	= *pSrc++;
+		_nKp	= swap_uint32(*pSrc++);
+		_nKi	= swap_uint32(*pSrc++);
+		_nKd	= swap_uint32(*pSrc++);
 	}
 
     virtual void     operator>>(uint8_t* pData)
     {
 		HostMsg::operator>>(pData);
 		uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		*pDst++ = _nKp;
-		*pDst++ = _nKi;
-		*pDst++ = _nKd;
+		*pDst++ = swap_uint32(_nKp);
+		*pDst++ = swap_uint32(_nKi);
+		*pDst++ = swap_uint32(_nKd);
 	}
 
 protected:
@@ -554,16 +558,16 @@ public:
     {
         HostMsg::operator<<(pData);
 		uint32_t* pSrc = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_nSiteIdx			= *pSrc++;
-		_bMeerstetterPid	= (*pSrc++ != 0);
+		_nSiteIdx			= swap_uint32(*pSrc++);
+		_bMeerstetterPid	= (swap_uint32(*pSrc++) != 0);
 	}
 
     virtual void     operator>>(uint8_t* pData)
     {
 		HostMsg::operator>>(pData);
 		uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		*pDst++ = _nSiteIdx;
-		*pDst++ = _bMeerstetterPid ? 1 : 0;
+		*pDst++ = swap_uint32(_nSiteIdx);
+		*pDst++ = swap_uint32(_bMeerstetterPid ? 1 : 0);
 	}
 
 protected:
@@ -602,14 +606,14 @@ public:
     {
         HostMsg::operator<<(pData);
 		uint32_t* pSrc = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_nSiteIdx			= *pSrc++;
+		_nSiteIdx			= swap_uint32(*pSrc++);
 	}
 
     virtual void     operator>>(uint8_t* pData)
     {
 		HostMsg::operator>>(pData);
 		uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		*pDst++ = _nSiteIdx;
+		*pDst++ = swap_uint32(_nSiteIdx);
 	}
 
 protected:

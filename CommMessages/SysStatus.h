@@ -24,10 +24,11 @@ struct ThermalRec
 {
 public:
     uint32_t    _nTimeTag_ms;
-    int32_t     _nSampleTemp_mC;
-    int32_t     _nSinkTemp_mC;
-    int32_t     _nBlockTemp_mC;
-    int32_t     _nCurrent_mA;
+    int32_t     _nChan1_mC;
+    int32_t     _nChan2_mC;
+	int32_t     _nChan3_mC;
+	int32_t     _nChan4_mC;
+	int32_t     _nCurrent_mA;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,32 +62,32 @@ public:
     {
         StreamingObj::operator<<(pData);
         uint32_t*   pSrc = (uint32_t*)(pData + StreamingObj::GetStreamSize());
-        _bRunning           = *pSrc++ == 1;
-        _nSegmentIdx        = *pSrc++;
-        _nCycle             = *pSrc++;
-        _nStepIdx           = *pSrc++;
-        _nRunTimer_ms       = *pSrc++;
-        _nStepTimer_ms      = *pSrc++;
-		_nHoldTimer_ms	    = *pSrc++;
-		_nTemperature_mC    = *pSrc++;
-		_nNumThermalRecs    = *pSrc++;
-        _nNumOpticsRecs     = *pSrc++;
+        _bRunning           = swap_uint32(*pSrc++) != 0;
+        _nSegmentIdx        = swap_uint32(*pSrc++);
+        _nCycle             = swap_uint32(*pSrc++);
+        _nStepIdx           = swap_uint32(*pSrc++);
+        _nRunTimer_ms       = swap_uint32(*pSrc++);
+        _nStepTimer_ms      = swap_uint32(*pSrc++);
+		_nHoldTimer_ms	    = swap_uint32(*pSrc++);
+		_nTemperature_mC    = swap_uint32(*pSrc++);
+		_nNumThermalRecs    = swap_uint32(*pSrc++);
+        _nNumOpticsRecs     = swap_uint32(*pSrc++);
   	}
 
     virtual void     operator>>(uint8_t* pData)
     {
         StreamingObj::operator>>(pData);
         uint32_t*   pDst = (uint32_t*)(pData + StreamingObj::GetStreamSize());
-        *pDst++ = _bRunning ? 1 : 0;
-        *pDst++ = _nSegmentIdx;
-        *pDst++ = _nCycle;
-        *pDst++ = _nStepIdx;
-        *pDst++ = _nRunTimer_ms;
-        *pDst++ = _nStepTimer_ms;
-		*pDst++ = _nHoldTimer_ms;
-		*pDst++ = _nTemperature_mC;
-		*pDst++ = _nNumThermalRecs;
-		*pDst++ = _nNumOpticsRecs;
+        *pDst++ = swap_uint32(_bRunning ? 1 : 0);
+        *pDst++ = swap_uint32(_nSegmentIdx);
+        *pDst++ = swap_uint32(_nCycle);
+        *pDst++ = swap_uint32(_nStepIdx);
+        *pDst++ = swap_uint32(_nRunTimer_ms);
+        *pDst++ = swap_uint32(_nStepTimer_ms);
+		*pDst++ = swap_uint32(_nHoldTimer_ms);
+		*pDst++ = swap_uint32(_nTemperature_mC);
+		*pDst++ = swap_uint32(_nNumThermalRecs);
+		*pDst++ = swap_uint32(_nNumOpticsRecs);
 	}
     
 	void        SetTemperature(uint32_t n)		        { _nTemperature_mC = n; }
@@ -209,7 +210,7 @@ public:
     {
         StreamingObj::operator<<(pData);
         uint32_t*   pSrc = (uint32_t*)(pData + StreamingObj::GetStreamSize());
-		uint32_t nNumSites = *pSrc++;
+		uint32_t nNumSites = swap_uint32(*pSrc++);
 		_arSiteStatus.resize(nNumSites);
 		for (int i = 0; i < (int)nNumSites; i++)
 		{
@@ -222,7 +223,7 @@ public:
     {
 		StreamingObj::operator>>(pData);
         uint32_t* pDst = (uint32_t*)(pData + StreamingObj::GetStreamSize());
-		*pDst++ = (uint32_t)_arSiteStatus.size();
+		*pDst++ = swap_uint32(_arSiteStatus.size());
 		for (int i = 0; i < (int)_arSiteStatus.size(); i++)
 		{
 			_arSiteStatus[i] >> (uint8_t*)pDst;

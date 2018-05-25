@@ -50,33 +50,27 @@ public:
     virtual void    operator<<(const uint8_t* pData)
     {
         StreamingObj::operator<<(pData);
-        _nTargetTemp_mC     = *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 0]);
-        _nHoldTimer_ms      = *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 4]);
-		_bMelt				= *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 8]) == 1;
-        _nRampRate_mCPerSec = *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 12]);
+		uint32_t*   pSrc = (uint32_t*)(pData + StreamingObj::GetStreamSize());
+		_nTargetTemp_mC		= swap_uint32(*pSrc++);
+        _nHoldTimer_ms      = swap_uint32(*pSrc++);
+		_bMelt				= swap_uint32(*pSrc++) == 1;
+        _nRampRate_mCPerSec = swap_uint32(*pSrc++);
 		
-		int nOffset = StreamingObj::GetStreamSize() + (4 * sizeof(uint32_t));
 		for (int i = 0; i < kNumOpticChans; i++)
-		{
-			_arReadChanFlgs[i] = *((uint32_t*)&pData[nOffset]) == 1;
-			nOffset += sizeof(uint32_t);
-		}
+			_arReadChanFlgs[i] = swap_uint32(*pSrc++) == 1;
 	}
 
     virtual void    operator>>(uint8_t* pData)
     {
         StreamingObj::operator>>(pData);
-        *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 0])  = _nTargetTemp_mC;
-        *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 4])  = _nHoldTimer_ms;
-        *((uint32_t*)&pData[StreamingObj::GetStreamSize() + 8])  = _bMelt ? 1 : 0;
-		*((uint32_t*)&pData[StreamingObj::GetStreamSize() + 12]) = _nRampRate_mCPerSec;
+		uint32_t*   pDst = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
+		*pDst++ = swap_uint32(_nTargetTemp_mC);
+		*pDst++ = swap_uint32(_nHoldTimer_ms);
+		*pDst++ = swap_uint32(_bMelt ? 1 : 0);
+		*pDst++ = swap_uint32(_nRampRate_mCPerSec);
 
-		int nOffset = StreamingObj::GetStreamSize() + (4 * sizeof(uint32_t));
 		for (int i = 0; i < kNumOpticChans; i++)
-		{
-			*((uint32_t*)&pData[nOffset]) = _arReadChanFlgs[i] ? 1 : 0;
-			nOffset += sizeof(uint32_t);
-		}
+			*pDst++ = swap_uint32(_arReadChanFlgs[i] ? 1 : 0);
 	}
 
 protected:
@@ -119,31 +113,31 @@ public:
     virtual void    operator<<(const uint8_t* pData)
     {
         StreamingObj::operator<<(pData);
-		_nNumCycles = *((uint32_t*)&pData[StreamingObj::GetStreamSize()]);
-		int nNumSteps = *((uint32_t*)&pData[StreamingObj::GetStreamSize() + sizeof(uint32_t)]);
-		_vSteps.clear();
+		uint32_t*   pSrc = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
+		_nNumCycles		= swap_uint32(*pSrc++);
 
-		uint32_t nOffset = StreamingObj::GetStreamSize() + sizeof(_nNumCycles) + sizeof(uint32_t);
+		_vSteps.clear();
+		int nNumSteps = swap_uint32(*pSrc++);
 		for (int i = 0; i < nNumSteps; i++)
         {
 			Step step;
-			step << &pData[nOffset];
+			step << (uint8_t*)pSrc;
 			_vSteps.push_back(step);
-            nOffset += step.GetStreamSize();
+			pSrc += step.GetStreamSize() / sizeof(uint32_t);
         }
     }
 
     virtual void    operator>>(uint8_t* pData)
     {
         StreamingObj::operator>>(pData);
-		*((uint32_t*)&pData[StreamingObj::GetStreamSize()]) = _nNumCycles;
-		*((uint32_t*)&pData[StreamingObj::GetStreamSize() + sizeof(uint32_t)]) = (uint32_t)_vSteps.size();
+		uint32_t*   pDst = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
+		*pDst++ = swap_uint32(_nNumCycles);
+		*pDst++ = swap_uint32(_vSteps.size());
 
-		uint32_t nOffset = StreamingObj::GetStreamSize() + sizeof(_nNumCycles) + sizeof(uint32_t);
 		for (int i = 0; i < (int)_vSteps.size(); i++)
         {
-            _vSteps[i] >> &pData[nOffset];
-            nOffset += _vSteps[i].GetStreamSize();
+            _vSteps[i] >> (uint8_t*)pDst;
+			pDst += _vSteps[i].GetStreamSize() / sizeof(uint32_t);
         }
     }
     
@@ -181,28 +175,29 @@ public:
     virtual void    operator<<(const uint8_t* pData)
     {
         StreamingObj::operator<<(pData);
-        _vSegments.clear();
+		uint32_t*   pSrc = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 
-		int nNumSegs = *((uint32_t*)&pData[StreamingObj::GetStreamSize()]);
-		uint32_t nOffset = StreamingObj::GetStreamSize() + sizeof(uint32_t);
+        _vSegments.clear();
+		int nNumSegs = swap_uint32(*pSrc++);
 		for (int i = 0; i < nNumSegs; i++)
         {
 			Segment seg;
-			seg << &pData[nOffset];
+			seg << (uint8_t*)pSrc;
             _vSegments.push_back(seg);
-            nOffset += seg.GetStreamSize();
+			pSrc += seg.GetStreamSize() / sizeof(uint32_t);
         }
     }
 
     virtual void    operator>>(uint8_t* pData)
     {
         StreamingObj::operator>>(pData);
-		*((uint32_t*)&pData[StreamingObj::GetStreamSize()]) = (uint32_t)_vSegments.size();
-		uint32_t nOffset = StreamingObj::GetStreamSize() + sizeof(uint32_t);
+		uint32_t*   pDst = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
+
+		*pDst++ = (uint32_t)_vSegments.size();
 		for (int i = 0; i < (int)_vSegments.size(); i++)
         {
-            _vSegments[i] >> &pData[nOffset];
-            nOffset += _vSegments[i].GetStreamSize();
+            _vSegments[i] >> (uint8_t*)pDst;
+			pDst += _vSegments[i].GetStreamSize() / sizeof(uint32_t);
         }
     }
 
