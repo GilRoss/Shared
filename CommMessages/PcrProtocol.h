@@ -53,11 +53,11 @@ public:
 		uint32_t*   pSrc = (uint32_t*)(pData + StreamingObj::GetStreamSize());
 		_nTargetTemp_mC		= swap_uint32(*pSrc++);
         _nHoldTimer_ms      = swap_uint32(*pSrc++);
-		_bMelt				= swap_uint32(*pSrc++) == 1;
+		_bMelt				= swap_uint32(*pSrc++) != 0;
         _nRampRate_mCPerSec = swap_uint32(*pSrc++);
 		
 		for (int i = 0; i < kNumOpticChans; i++)
-			_arReadChanFlgs[i] = swap_uint32(*pSrc++) == 1;
+			_arReadChanFlgs[i] = swap_uint32(*pSrc++) != 0;
 	}
 
     virtual void    operator>>(uint8_t* pData)
@@ -94,13 +94,22 @@ public:
     {
     }
 
+    virtual ~Segment()
+    {
+        Clear();
+    }
+
     void        SetNumCycles(uint32_t nNumCycs) {_nNumCycles = nNumCycs;}
     uint32_t    GetNumCycles() const            {return _nNumCycles;}
     uint32_t    GetNumSteps() const             {return (uint32_t)_vSteps.size();}
-    Step        GetStep(uint32_t stpIdx) const  {return _vSteps[stpIdx];}
-    void        PushStep(const Step& stp)       {_vSteps.push_back(stp);}
+    const Step& GetStep(uint32_t stpIdx) const  {return _vSteps[stpIdx];}
     void        Clear()                         {_vSteps.clear();}
-    
+
+	void AddStep(const Step& step)
+	{
+		_vSteps.push_back(step);
+	}
+
 	virtual uint32_t GetStreamSize() const
 	{
         uint32_t nSize = StreamingObj::GetStreamSize() + sizeof(_nNumCycles) + sizeof(uint32_t);
@@ -118,12 +127,11 @@ public:
 
 		_vSteps.clear();
 		int nNumSteps = swap_uint32(*pSrc++);
+		_vSteps.resize(nNumSteps);
 		for (int i = 0; i < nNumSteps; i++)
         {
-			Step step;
-			step << (uint8_t*)pSrc;
-			_vSteps.push_back(step);
-			pSrc += step.GetStreamSize() / sizeof(uint32_t);
+			_vSteps[i] << (uint8_t*)pSrc;
+			pSrc += _vSteps[i].GetStreamSize() / sizeof(uint32_t);
         }
     }
 
@@ -139,6 +147,17 @@ public:
             _vSteps[i] >> (uint8_t*)pDst;
 			pDst += _vSteps[i].GetStreamSize() / sizeof(uint32_t);
         }
+    }
+
+    Segment& operator=(const Segment& rhs)
+    {
+        Clear();
+        _vSteps.resize(rhs.GetNumSteps());
+		_nNumCycles = rhs.GetNumCycles();
+        for (int nStepIdx = 0; nStepIdx < (int)rhs.GetNumSteps(); nStepIdx++)
+            _vSteps[nStepIdx] = rhs.GetStep(nStepIdx);
+
+        return *this;
     }
     
 protected:
@@ -158,11 +177,20 @@ public:
     {
     }
 
-    uint32_t    GetNumSegs() const              {return (uint32_t)_vSegments.size();}
-    Segment     GetSegment(uint32_t idx) const  {return _vSegments[idx];}
-    void        AddSegment(const Segment& seg)  {_vSegments.push_back(seg);}
-    void        Clear()                         {_vSegments.clear();}
-    
+    virtual ~PcrProtocol()
+    {
+        Clear();
+    }
+
+    uint32_t        GetNumSegs() const              {return (uint32_t)_vSegments.size();}
+    const Segment&  GetSegment(uint32_t idx) const  {return _vSegments[idx];}
+    void            Clear()                         {_vSegments.clear();}
+
+	void AddSegment(const Segment& seg)
+	{
+		_vSegments.push_back(seg);
+	}
+
     virtual uint32_t        GetStreamSize() const
     {
         uint32_t nSize = StreamingObj::GetStreamSize() + sizeof(uint32_t);
@@ -179,12 +207,11 @@ public:
 
         _vSegments.clear();
 		int nNumSegs = swap_uint32(*pSrc++);
-		for (int i = 0; i < nNumSegs; i++)
+		_vSegments.resize(nNumSegs);
+		for (int nSegIdx = 0; nSegIdx < nNumSegs; nSegIdx++)
         {
-			Segment seg;
-			seg << (uint8_t*)pSrc;
-            _vSegments.push_back(seg);
-			pSrc += seg.GetStreamSize() / sizeof(uint32_t);
+			_vSegments[nSegIdx] << (uint8_t*)pSrc;
+			pSrc += _vSegments[nSegIdx].GetStreamSize() / sizeof(uint32_t);
         }
     }
 
@@ -193,7 +220,7 @@ public:
         StreamingObj::operator>>(pData);
 		uint32_t*   pDst = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 
-		*pDst++ = (uint32_t)_vSegments.size();
+		*pDst++ = swap_uint32((uint32_t)_vSegments.size());
 		for (int i = 0; i < (int)_vSegments.size(); i++)
         {
             _vSegments[i] >> (uint8_t*)pDst;
@@ -204,8 +231,9 @@ public:
     PcrProtocol& operator=(const PcrProtocol& rhs)
     {
         Clear();
+        _vSegments.resize(rhs.GetNumSegs());
         for (int nSegIdx = 0; nSegIdx < (int)rhs.GetNumSegs(); nSegIdx++)
-            AddSegment(rhs.GetSegment(nSegIdx));
+            _vSegments[nSegIdx] = rhs.GetSegment(nSegIdx);
 
         return *this;
     }
