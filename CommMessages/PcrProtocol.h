@@ -140,7 +140,7 @@ public:
         StreamingObj::operator>>(pData);
 		uint32_t*   pDst = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 		*pDst++ = swap_uint32(_nNumCycles);
-		*pDst++ = swap_uint32(_vSteps.size());
+		*pDst++ = swap_uint32((uint32_t)_vSteps.size());
 
 		for (int i = 0; i < (int)_vSteps.size(); i++)
         {
