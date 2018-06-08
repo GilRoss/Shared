@@ -220,7 +220,7 @@ public:
 		HostMsg::operator>>(pData);
 		uint32_t*	pDst = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
 
-		*pDst++ = swap_uint32(_arOpticsRecs.size());
+		*pDst++ = swap_uint32((uint32_t)_arOpticsRecs.size());
 		for (int i = 0; i < (int)_arOpticsRecs.size(); i++)
 		{
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nTimeTag_ms);
@@ -365,9 +365,9 @@ public:
     virtual ~SetOpticsLedReq()
     {
     }
-    
+
     void        SetSiteIdx(uint32_t nSiteIdx)       {_nSiteIdx = nSiteIdx;}
-    uint32_t    GetSiteIdx() const                  {return _nSiteIdx;}    
+    uint32_t    GetSiteIdx() const                  {return _nSiteIdx;}
     void        SetChanIdx(uint32_t nChanIdx)       {_nChanIdx = nChanIdx;}
     uint32_t    GetChanIdx() const                  {return _nChanIdx;}    
     void        SetIntensity(uint32_t nIntensity)   {_nIntensity = nIntensity;}
@@ -412,6 +412,207 @@ private:
     uint32_t    _nChanIdx;
     uint32_t    _nIntensity;
     uint32_t    _nDuration_us;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+class GetOpticsDiodeReq : public HostMsg
+{
+public:
+    GetOpticsDiodeReq()
+        :HostMsg(MakeObjId('G', 'O', 'D', 'i'))
+        ,_nDiodeIdx(0)
+    {
+    }
+
+    virtual ~GetOpticsDiodeReq()
+    {
+    }
+
+    void        SetDiodeIdx(uint32_t nDiodeIdx)       {_nDiodeIdx = nDiodeIdx;}
+    uint32_t    GetDiodeIdx() const                  {return _nDiodeIdx;}
+
+    virtual uint32_t GetStreamSize() const
+    {
+        int nSize = HostMsg::GetStreamSize();
+        nSize += sizeof(_nDiodeIdx);
+        return nSize;
+    }
+
+    virtual void     operator<<(const uint8_t* pData)
+    {
+        HostMsg::operator<<(pData);
+        uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        _nDiodeIdx       = swap_uint32(*pSrc++);
+    }
+
+    virtual void     operator>>(uint8_t* pData)
+    {
+        HostMsg::operator>>(pData);
+        uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        *pDst++ = swap_uint32(_nDiodeIdx);
+    }
+
+protected:
+
+private:
+    uint32_t    _nDiodeIdx;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+class GetOpticsDiodeRes : public HostMsg
+{
+public:
+    GetOpticsDiodeRes()
+        :HostMsg(MakeObjId('G', 'O', 'D', 'i'))
+        ,_diodeValue(0)
+    {
+    }
+
+    virtual ~GetOpticsDiodeRes()
+    {
+    }
+
+    void        SetDiodeValue(uint32_t ndiodeValue)       {_diodeValue = ndiodeValue;}
+    uint32_t    GetDiodeValue() const                  {return _diodeValue;}
+
+    virtual uint32_t GetStreamSize() const
+    {
+        int nSize = HostMsg::GetStreamSize();
+        nSize += sizeof(_diodeValue);
+        return nSize;
+    }
+
+    virtual void     operator<<(const uint8_t* pData)
+    {
+        HostMsg::operator<<(pData);
+        uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        _diodeValue       = swap_uint32(*pSrc++);
+    }
+
+    virtual void     operator>>(uint8_t* pData)
+    {
+        HostMsg::operator>>(pData);
+        uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        *pDst++ = swap_uint32(_diodeValue);
+    }
+
+protected:
+
+private:
+    uint32_t    _diodeValue;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+class ReadOpticsReq : public HostMsg
+{
+public:
+    ReadOpticsReq()
+        :HostMsg(MakeObjId('R', 'O', 'p', 't'))
+        ,_nLedIdx(0)
+        ,_nDiodeIdx(0)
+        ,_nLedIntensity(0)
+        ,_nIntegrationTime_us(0)
+    {
+    }
+
+    virtual ~ReadOpticsReq()
+    {
+    }
+
+    void        SetLedIdx(uint32_t nLedIdx)       {_nLedIdx = nLedIdx;}
+    uint32_t    GetLedIdx() const                  {return _nLedIdx;}
+    void        SetDiodeIdx(uint32_t nDiodeIdx)       {_nDiodeIdx = nDiodeIdx;}
+    uint32_t    GetDiodeIdx() const                  {return _nDiodeIdx;}
+    void        SetLedIntensity(uint32_t nLedIntensity)       {_nLedIntensity = nLedIntensity;}
+    uint32_t    GetLedIntensity() const                  {return _nLedIntensity;}
+    void        SetIntegrationTime(uint32_t nIntegrationTime_us)       {_nIntegrationTime_us = nIntegrationTime_us;}
+    uint32_t    GetIntegrationTime() const                  {return _nIntegrationTime_us;}
+
+    virtual uint32_t GetStreamSize() const
+    {
+        int nSize = HostMsg::GetStreamSize();
+        nSize += sizeof(_nLedIdx);
+        nSize += sizeof(_nDiodeIdx);
+        nSize += sizeof(_nLedIntensity);
+        nSize += sizeof(_nIntegrationTime_us);
+        return nSize;
+    }
+
+    virtual void     operator<<(const uint8_t* pData)
+    {
+        HostMsg::operator<<(pData);
+        uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        _nLedIdx                = swap_uint32(*pSrc++);
+        _nDiodeIdx              = swap_uint32(*pSrc++);
+        _nLedIntensity          = swap_uint32(*pSrc++);
+        _nIntegrationTime_us    = swap_uint32(*pSrc++);
+    }
+
+    virtual void     operator>>(uint8_t* pData)
+    {
+        HostMsg::operator>>(pData);
+        uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        *pDst++ = swap_uint32(_nLedIdx);
+        *pDst++ = swap_uint32(_nDiodeIdx);
+        *pDst++ = swap_uint32(_nLedIntensity);
+        *pDst++ = swap_uint32(_nIntegrationTime_us);
+    }
+
+protected:
+
+private:
+    uint32_t    _nLedIdx;
+    uint32_t    _nDiodeIdx;
+    uint32_t    _nLedIntensity;
+    uint32_t    _nIntegrationTime_us;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+class ReadOpticsRes : public HostMsg
+{
+public:
+    ReadOpticsRes()
+        :HostMsg(MakeObjId('R', 'O', 'p', 't'))
+        ,_diodeValue(0)
+    {
+    }
+
+    virtual ~ReadOpticsRes()
+    {
+    }
+
+    void        SetDiodeValue(uint32_t ndiodeValue)    {_diodeValue = ndiodeValue;}
+    uint32_t    GetDiodeValue() const                  {return _diodeValue;}
+
+    virtual uint32_t GetStreamSize() const
+    {
+        int nSize = HostMsg::GetStreamSize();
+        nSize += sizeof(_diodeValue);
+        return nSize;
+    }
+
+    virtual void     operator<<(const uint8_t* pData)
+    {
+        HostMsg::operator<<(pData);
+        uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        _diodeValue       = swap_uint32(*pSrc++);
+    }
+
+    virtual void     operator>>(uint8_t* pData)
+    {
+        HostMsg::operator>>(pData);
+        uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        *pDst++ = swap_uint32(_diodeValue);
+    }
+
+protected:
+
+private:
+    uint32_t    _diodeValue;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
