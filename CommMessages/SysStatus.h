@@ -223,7 +223,7 @@ public:
     {
 		StreamingObj::operator>>(pData);
         uint32_t* pDst = (uint32_t*)(pData + StreamingObj::GetStreamSize());
-		*pDst++ = swap_uint32(_arSiteStatus.size());
+		*pDst++ = swap_uint32((uint32_t)_arSiteStatus.size());
 		for (int i = 0; i < (int)_arSiteStatus.size(); i++)
 		{
 			_arSiteStatus[i] >> (uint8_t*)pDst;
