@@ -16,48 +16,53 @@ public:
         :StreamingObj(MakeObjId('S','t','e','p'))
         , _nTargetTemp_mC(0)
         , _nHoldTimer_ms(0)
+		, _bOpticalAcquisition(false)
         , _bMelt(false)
         , _nRampRate_mCPerSec(0)
     {
     }
     
-    void        SetRampRate(int32_t nRampRate_mCPerSec) {_nRampRate_mCPerSec = nRampRate_mCPerSec;}
-    int32_t     GetRampRate() const                     {return _nRampRate_mCPerSec;}
     void        SetTargetTemp(int32_t nTargetTemp_mC)   {_nTargetTemp_mC = nTargetTemp_mC;}
     int32_t     GetTargetTemp() const                   {return _nTargetTemp_mC;}
     void        SetHoldTimer(uint32_t nHoldTime_ms)     {_nHoldTimer_ms = nHoldTime_ms;}
     uint32_t    GetHoldTimer() const                    {return _nHoldTimer_ms;}
+	void        SetOpticalAcqFlg(bool b)				{ _bOpticalAcquisition = b; }
+	bool        GetOpticalAcqFlg() const				{ return _bOpticalAcquisition; }
 	void        SetMeltFlg(bool b)						{ _bMelt = b; }
 	bool        GetMeltFlg() const						{ return _bMelt; }
-	uint32_t    GetNumOpticsChans()					    { return sizeof(_arReadChanFlgs); }
-	void        SetReadChanFlg(uint32_t nChanIdx, bool b) { _arReadChanFlgs[nChanIdx] = b; }
-	bool        GetReadChanFlg(uint32_t nChanIdx) const { return _arReadChanFlgs[nChanIdx]; }
+	void        SetRampRate(int32_t nRampRate_mCPerSec) { _nRampRate_mCPerSec = nRampRate_mCPerSec; }
+	int32_t     GetRampRate() const						{ return _nRampRate_mCPerSec; }
 
     void        SetTargetTemp(int32_t nTargetTemp_mC, uint32_t nHoldTime_ms,
-                              bool bMeasureFluorescence = false, int32_t nRampRate_mCPerSec = 0)
+                              bool bOpticalAcq = false, bool bMelt = false, int32_t nRampRate_mCPerSec = 0)
                 {
-                    _nTargetTemp_mC     = nTargetTemp_mC;
-                    _nHoldTimer_ms      = nHoldTime_ms;
-					_bMelt				= bMeasureFluorescence;
-                    _nRampRate_mCPerSec = nRampRate_mCPerSec;
+                    _nTargetTemp_mC			= nTargetTemp_mC;
+                    _nHoldTimer_ms			= nHoldTime_ms;
+					_bOpticalAcquisition	= bOpticalAcq;
+					_bMelt					= bMelt;
+					_nRampRate_mCPerSec		= nRampRate_mCPerSec;
                 }
     
 	virtual uint32_t GetStreamSize() const
 	{
-		return StreamingObj::GetStreamSize() + ((4 + kNumOpticChans) * sizeof(uint32_t));
+		uint32_t nSize = StreamingObj::GetStreamSize();
+		nSize += sizeof(_nTargetTemp_mC);
+		nSize += sizeof(_nHoldTimer_ms);
+		nSize += sizeof(uint32_t);	//_bOpticalAcquisition
+		nSize += sizeof(uint32_t);	//_bMelt
+		nSize += sizeof(_nRampRate_mCPerSec);
+		return nSize;
 	}
 
     virtual void    operator<<(const uint8_t* pData)
     {
         StreamingObj::operator<<(pData);
 		uint32_t*   pSrc = (uint32_t*)(pData + StreamingObj::GetStreamSize());
-		_nTargetTemp_mC		= swap_uint32(*pSrc++);
-        _nHoldTimer_ms      = swap_uint32(*pSrc++);
-		_bMelt				= swap_uint32(*pSrc++) != 0;
-        _nRampRate_mCPerSec = swap_uint32(*pSrc++);
-		
-		for (int i = 0; i < kNumOpticChans; i++)
-			_arReadChanFlgs[i] = swap_uint32(*pSrc++) != 0;
+		_nTargetTemp_mC			= swap_uint32(*pSrc++);
+        _nHoldTimer_ms			= swap_uint32(*pSrc++);
+		_bOpticalAcquisition	= swap_uint32(*pSrc++) != 0;
+		_bMelt					= swap_uint32(*pSrc++) != 0;
+        _nRampRate_mCPerSec		= swap_uint32(*pSrc++);
 	}
 
     virtual void    operator>>(uint8_t* pData)
@@ -66,11 +71,9 @@ public:
 		uint32_t*   pDst = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 		*pDst++ = swap_uint32(_nTargetTemp_mC);
 		*pDst++ = swap_uint32(_nHoldTimer_ms);
+		*pDst++ = swap_uint32(_bOpticalAcquisition ? 1 : 0);
 		*pDst++ = swap_uint32(_bMelt ? 1 : 0);
 		*pDst++ = swap_uint32(_nRampRate_mCPerSec);
-
-		for (int i = 0; i < kNumOpticChans; i++)
-			*pDst++ = swap_uint32(_arReadChanFlgs[i] ? 1 : 0);
 	}
 
 protected:
@@ -78,7 +81,7 @@ protected:
 private:
     int32_t     _nTargetTemp_mC;
     uint32_t    _nHoldTimer_ms;
-	bool        _arReadChanFlgs[kNumOpticChans];
+	bool        _bOpticalAcquisition;
 	bool        _bMelt;
 	int32_t     _nRampRate_mCPerSec;
 };
@@ -112,7 +115,9 @@ public:
 
 	virtual uint32_t GetStreamSize() const
 	{
-        uint32_t nSize = StreamingObj::GetStreamSize() + sizeof(_nNumCycles) + sizeof(uint32_t);
+		uint32_t nSize = StreamingObj::GetStreamSize();
+		nSize += sizeof(_nNumCycles);
+		nSize += sizeof(uint32_t);	//Number of steps.
         for (int i = 0; i < (int)_vSteps.size(); i++)
             nSize += _vSteps[i].GetStreamSize();
         
@@ -172,9 +177,21 @@ private:
 class PcrProtocol : public StreamingObj
 {
 public:
+	enum OpticsType : uint32_t
+	{
+		kPhotoDiode,
+		kCamera
+	};
+
     PcrProtocol()
         :StreamingObj(MakeObjId('P','r','o','t'))
-    {
+		, _nOpticalType(OpticsType::kPhotoDiode)
+		, _nLedIdx(0)
+		, _nLedIntensity(0)
+		, _nLedStablizationTime_us(0)
+		, _nDiodeIdx(0)
+		, _nDiodeIntegrationTime_us(0)
+	{
     }
 
     virtual ~PcrProtocol()
@@ -182,7 +199,20 @@ public:
         Clear();
     }
 
-    uint32_t        GetNumSegs() const              {return (uint32_t)_vSegments.size();}
+	void			SetOpticalType(uint32_t n)					{ _nOpticalType = n; }
+	uint32_t		GetOpticalType() const						{ return _nOpticalType; }
+	void			SetLedIdx(uint32_t n)						{ _nLedIdx = n; }
+	uint32_t		GetLedIdx() const							{ return _nLedIdx; }
+	void			SetLedIntensity(uint32_t n)					{ _nLedIntensity = n; }
+	uint32_t		GetLedIntensity() const						{ return _nLedIntensity; }
+	void			SetLedStablizationTime(uint32_t nTime_us)	{ _nLedStablizationTime_us = nTime_us; }
+	uint32_t		GetLedStablizationTime() const				{ return _nLedStablizationTime_us; }
+	void			SetDiodeIdx(uint32_t n)						{ _nDiodeIdx = n; }
+	uint32_t		GetDiodeIdx() const							{ return _nDiodeIdx; }
+	void			SetDiodeIntegrationTime(uint32_t nTime_us)	{ _nDiodeIntegrationTime_us = nTime_us; }
+	uint32_t		GetDiodeIntegrationTime() const				{ return _nDiodeIntegrationTime_us; }
+
+	uint32_t        GetNumSegs() const              {return (uint32_t)_vSegments.size();}
     const Segment&  GetSegment(uint32_t idx) const  {return _vSegments[idx];}
     void            Clear()                         {_vSegments.clear();}
 
@@ -194,7 +224,15 @@ public:
     virtual uint32_t        GetStreamSize() const
     {
         uint32_t nSize = StreamingObj::GetStreamSize() + sizeof(uint32_t);
-        for (int i = 0; i < (int)_vSegments.size(); i++)
+		nSize += sizeof(_nOpticalType);
+		nSize += sizeof(_nLedIdx);
+		nSize += sizeof(_nLedIntensity);
+		nSize += sizeof(_nLedStablizationTime_us);
+		nSize += sizeof(_nDiodeIdx);
+		nSize += sizeof(_nDiodeIntegrationTime_us);
+
+		nSize += sizeof(uint32_t); //Number of segments.
+		for (int i = 0; i < (int)_vSegments.size(); i++)
             nSize += _vSegments[i].GetStreamSize();
         
         return nSize;
@@ -205,7 +243,14 @@ public:
         StreamingObj::operator<<(pData);
 		uint32_t*   pSrc = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 
-        _vSegments.clear();
+		_nOpticalType				= swap_uint32(*pSrc++);
+		_nLedIdx					= swap_uint32(*pSrc++);
+		_nLedIntensity				= swap_uint32(*pSrc++);
+		_nLedStablizationTime_us	= swap_uint32(*pSrc++);
+		_nDiodeIdx					= swap_uint32(*pSrc++);
+		_nDiodeIntegrationTime_us	= swap_uint32(*pSrc++);
+
+		_vSegments.clear();
 		int nNumSegs = swap_uint32(*pSrc++);
 		_vSegments.resize(nNumSegs);
 		for (int nSegIdx = 0; nSegIdx < nNumSegs; nSegIdx++)
@@ -220,6 +265,13 @@ public:
         StreamingObj::operator>>(pData);
 		uint32_t*   pDst = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 
+		*pDst++ = swap_uint32(_nOpticalType);
+		*pDst++ = swap_uint32(_nLedIdx);
+		*pDst++ = swap_uint32(_nLedIntensity);
+		*pDst++ = swap_uint32(_nLedStablizationTime_us);
+		*pDst++ = swap_uint32(_nDiodeIdx);
+		*pDst++ = swap_uint32(_nDiodeIntegrationTime_us);
+
 		*pDst++ = swap_uint32((uint32_t)_vSegments.size());
 		for (int i = 0; i < (int)_vSegments.size(); i++)
         {
@@ -230,7 +282,12 @@ public:
 
     PcrProtocol& operator=(const PcrProtocol& rhs)
     {
-        Clear();
+		_nOpticalType				= rhs._nOpticalType;
+		_nLedIntensity				= rhs._nLedIntensity;
+		_nLedStablizationTime_us	= rhs._nLedStablizationTime_us;
+		_nDiodeIntegrationTime_us	= rhs._nDiodeIntegrationTime_us;
+
+		Clear();
         _vSegments.resize(rhs.GetNumSegs());
         for (int nSegIdx = 0; nSegIdx < (int)rhs.GetNumSegs(); nSegIdx++)
             _vSegments[nSegIdx] = rhs.GetSegment(nSegIdx);
@@ -241,6 +298,13 @@ public:
 protected:
   
 private:
+	uint32_t	_nOpticalType;
+	uint32_t	_nLedIdx;
+	uint32_t	_nLedIntensity;
+	uint32_t	_nLedStablizationTime_us;
+	uint32_t	_nDiodeIdx;
+	uint32_t	_nDiodeIntegrationTime_us;
+
     std::vector<Segment> _vSegments;
 };
 
