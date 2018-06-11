@@ -223,7 +223,7 @@ public:
 
     virtual uint32_t        GetStreamSize() const
     {
-        uint32_t nSize = StreamingObj::GetStreamSize() + sizeof(uint32_t);
+        uint32_t nSize = StreamingObj::GetStreamSize();
 		nSize += sizeof(_nOpticalType);
 		nSize += sizeof(_nLedIdx);
 		nSize += sizeof(_nLedIntensity);
@@ -283,8 +283,10 @@ public:
     PcrProtocol& operator=(const PcrProtocol& rhs)
     {
 		_nOpticalType				= rhs._nOpticalType;
+		_nLedIdx					= rhs._nLedIdx;
 		_nLedIntensity				= rhs._nLedIntensity;
 		_nLedStablizationTime_us	= rhs._nLedStablizationTime_us;
+		_nDiodeIdx					= rhs._nDiodeIdx;
 		_nDiodeIntegrationTime_us	= rhs._nDiodeIntegrationTime_us;
 
 		Clear();
