@@ -248,7 +248,7 @@ private:
 class PcrProtocol : public StreamingObj
 {
 public:
-	enum OpticsType : uint32_t
+	enum DetectorType : uint32_t
 	{
 		kPhotoDiode,
 		kCamera
@@ -256,7 +256,7 @@ public:
 
     PcrProtocol()
         :StreamingObj(MakeObjId('P','r','o','t'))
-		, _nOpticalType(OpticsType::kPhotoDiode)
+		, _nDetectorType(DetectorType::kPhotoDiode)
 	{
     }
 
@@ -264,8 +264,8 @@ public:
     {
     }
 
-	void				SetOpticalType(uint32_t n)		    { _nOpticalType = n; }
-	uint32_t			GetOpticalType() const			    { return _nOpticalType; }
+	void				SetDetectorType(uint32_t n)		    { _nDetectorType = n; }
+	uint32_t			GetDetectorType() const			    { return _nDetectorType; }
 
 	uint32_t			GetNumOpticalReads() const			{ return (uint32_t)_vOpticalReads.size(); }
 	const OpticalRead&	GetOpticalRead(uint32_t idx) const	{ return _vOpticalReads[idx]; }
@@ -294,7 +294,7 @@ public:
     virtual uint32_t        GetStreamSize() const
     {
         uint32_t nSize = StreamingObj::GetStreamSize();
-		nSize += sizeof(_nOpticalType);
+		nSize += sizeof(_nDetectorType);
 
 		nSize += sizeof(uint32_t); //Number of optics channels.
 		for (int i = 0; i < (int)_vOpticalReads.size(); i++)
@@ -312,7 +312,7 @@ public:
         StreamingObj::operator<<(pData);
 		uint32_t*   pSrc = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 
-		_nOpticalType				= swap_uint32(*pSrc++);
+		_nDetectorType				= swap_uint32(*pSrc++);
 		_vOpticalReads.clear();
 		int nNumOpticalReads = swap_uint32(*pSrc++);
 		_vOpticalReads.resize(nNumOpticalReads);
@@ -337,7 +337,7 @@ public:
         StreamingObj::operator>>(pData);
 		uint32_t*   pDst = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 
-		*pDst++ = swap_uint32(_nOpticalType);
+		*pDst++ = swap_uint32(_nDetectorType);
 		*pDst++ = swap_uint32((uint32_t)_vOpticalReads.size());
 		for (int i = 0; i < (int)_vOpticalReads.size(); i++)
 		{
@@ -355,7 +355,7 @@ public:
 
     PcrProtocol& operator=(const PcrProtocol& rhs)
     {
-		_nOpticalType	= rhs._nOpticalType;
+		_nDetectorType	= rhs._nDetectorType;
 		_vOpticalReads.clear();
 		_vOpticalReads.resize(rhs.GetNumOpticalReads());
 		for (int nIdx = 0; nIdx < (int)rhs.GetNumOpticalReads(); nIdx++)
@@ -372,7 +372,7 @@ public:
 protected:
   
 private:
-	uint32_t					_nOpticalType;
+	uint32_t					_nDetectorType;
 	std::vector<OpticalRead>	_vOpticalReads;
 	std::vector<Segment>		_vSegments;
 };
