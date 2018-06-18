@@ -794,7 +794,7 @@ public:
     }
     
     void        SetSiteIdx(uint32_t nSiteIdx)   {_nSiteIdx = nSiteIdx;}
-    uint32_t    GetSiteIdx() const              {return _nSiteIdx;}    
+    uint32_t    GetSiteIdx() const              {return _nSiteIdx;}
 
 	virtual uint32_t GetStreamSize() const
 	{
@@ -821,6 +821,58 @@ protected:
   
 private:
     uint32_t    _nSiteIdx;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+class PauseRunReq : public HostMsg
+{
+public:
+    PauseRunReq()
+        :HostMsg(MakeObjId('P', 'a', 'u', 's'))
+        ,_nSiteIdx(0)
+    {
+    }
+
+    virtual ~PauseRunReq()
+    {
+    }
+
+    void        SetSiteIdx(uint32_t nSiteIdx)  {_nSiteIdx = nSiteIdx;}
+    uint32_t    GetSiteIdx() const             {return _nSiteIdx;}
+    void        SetPausedFlg(bool b)            {_bPaused = b;}
+    bool        GetPausedFlg() const            {return _bPaused;}
+
+    virtual uint32_t GetStreamSize() const
+    {
+        int nSize = HostMsg::GetStreamSize();
+        nSize += sizeof(_nSiteIdx);
+        nSize += sizeof(_bPaused);
+        return nSize;
+    }
+
+    virtual void     operator<<(const uint8_t* pData)
+    {
+        HostMsg::operator<<(pData);
+        uint32_t* pSrc = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        _nSiteIdx           = swap_uint32(*pSrc++);
+        _bPaused            = (swap_uint32(*pSrc++) != 0);
+    }
+
+    virtual void     operator>>(uint8_t* pData)
+    {
+        HostMsg::operator>>(pData);
+        uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        *pDst++ = swap_uint32(_nSiteIdx);
+        *pDst++ = swap_uint32(_bPaused ? 1 : 0);
+
+    }
+
+protected:
+
+private:
+    uint32_t    _nSiteIdx;
+    uint32_t    _bPaused;
 };
 
 #endif // __HostMessages_H

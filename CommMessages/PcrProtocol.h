@@ -177,7 +177,7 @@ private:
 class PcrProtocol : public StreamingObj
 {
 public:
-	enum OpticsType : uint32_t
+	enum DetectorType : uint32_t
 	{
 		kPhotoDiode,
 		kCamera
@@ -185,12 +185,12 @@ public:
 
     PcrProtocol()
         :StreamingObj(MakeObjId('P','r','o','t'))
-		, _nOpticalType(OpticsType::kPhotoDiode)
+		, _nDetectorType(DetectorType::kPhotoDiode)
 		, _nLedIdx(0)
 		, _nLedIntensity(0)
 		, _nLedStablizationTime_us(0)
-		, _nDiodeIdx(0)
-		, _nDiodeIntegrationTime_us(0)
+		, _nDetectorIdx(0)
+		, _nDetectorIntegrationTime_us(0)
 	{
     }
 
@@ -199,18 +199,18 @@ public:
         Clear();
     }
 
-	void			SetOpticalType(uint32_t n)					{ _nOpticalType = n; }
-	uint32_t		GetOpticalType() const						{ return _nOpticalType; }
+	void			SetDetectorType(uint32_t n)					{ _nDetectorType = n; }
+	uint32_t		GetDetectorType() const						{ return _nDetectorType; }
 	void			SetLedIdx(uint32_t n)						{ _nLedIdx = n; }
 	uint32_t		GetLedIdx() const							{ return _nLedIdx; }
 	void			SetLedIntensity(uint32_t n)					{ _nLedIntensity = n; }
 	uint32_t		GetLedIntensity() const						{ return _nLedIntensity; }
 	void			SetLedStablizationTime(uint32_t nTime_us)	{ _nLedStablizationTime_us = nTime_us; }
 	uint32_t		GetLedStablizationTime() const				{ return _nLedStablizationTime_us; }
-	void			SetDiodeIdx(uint32_t n)						{ _nDiodeIdx = n; }
-	uint32_t		GetDiodeIdx() const							{ return _nDiodeIdx; }
-	void			SetDiodeIntegrationTime(uint32_t nTime_us)	{ _nDiodeIntegrationTime_us = nTime_us; }
-	uint32_t		GetDiodeIntegrationTime() const				{ return _nDiodeIntegrationTime_us; }
+	void			SetDetectorIdx(uint32_t n)						{ _nDetectorIdx = n; }
+	uint32_t		GetDetectorIdx() const							{ return _nDetectorIdx; }
+	void			SetDetectorIntegrationTime(uint32_t nTime_us)	{ _nDetectorIntegrationTime_us = nTime_us; }
+	uint32_t		GetDetectorIntegrationTime() const				{ return _nDetectorIntegrationTime_us; }
 
 	uint32_t        GetNumSegs() const              {return (uint32_t)_vSegments.size();}
     const Segment&  GetSegment(uint32_t idx) const  {return _vSegments[idx];}
@@ -224,12 +224,12 @@ public:
     virtual uint32_t        GetStreamSize() const
     {
         uint32_t nSize = StreamingObj::GetStreamSize();
-		nSize += sizeof(_nOpticalType);
+		nSize += sizeof(_nDetectorType);
 		nSize += sizeof(_nLedIdx);
 		nSize += sizeof(_nLedIntensity);
 		nSize += sizeof(_nLedStablizationTime_us);
-		nSize += sizeof(_nDiodeIdx);
-		nSize += sizeof(_nDiodeIntegrationTime_us);
+		nSize += sizeof(_nDetectorIdx);
+		nSize += sizeof(_nDetectorIntegrationTime_us);
 
 		nSize += sizeof(uint32_t); //Number of segments.
 		for (int i = 0; i < (int)_vSegments.size(); i++)
@@ -243,12 +243,12 @@ public:
         StreamingObj::operator<<(pData);
 		uint32_t*   pSrc = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 
-		_nOpticalType				= swap_uint32(*pSrc++);
+		_nDetectorType				= swap_uint32(*pSrc++);
 		_nLedIdx					= swap_uint32(*pSrc++);
 		_nLedIntensity				= swap_uint32(*pSrc++);
 		_nLedStablizationTime_us	= swap_uint32(*pSrc++);
-		_nDiodeIdx					= swap_uint32(*pSrc++);
-		_nDiodeIntegrationTime_us	= swap_uint32(*pSrc++);
+		_nDetectorIdx				= swap_uint32(*pSrc++);
+		_nDetectorIntegrationTime_us= swap_uint32(*pSrc++);
 
 		_vSegments.clear();
 		int nNumSegs = swap_uint32(*pSrc++);
@@ -265,12 +265,12 @@ public:
         StreamingObj::operator>>(pData);
 		uint32_t*   pDst = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 
-		*pDst++ = swap_uint32(_nOpticalType);
+		*pDst++ = swap_uint32(_nDetectorType);
 		*pDst++ = swap_uint32(_nLedIdx);
 		*pDst++ = swap_uint32(_nLedIntensity);
 		*pDst++ = swap_uint32(_nLedStablizationTime_us);
-		*pDst++ = swap_uint32(_nDiodeIdx);
-		*pDst++ = swap_uint32(_nDiodeIntegrationTime_us);
+		*pDst++ = swap_uint32(_nDetectorIdx);
+		*pDst++ = swap_uint32(_nDetectorIntegrationTime_us);
 
 		*pDst++ = swap_uint32((uint32_t)_vSegments.size());
 		for (int i = 0; i < (int)_vSegments.size(); i++)
@@ -282,12 +282,12 @@ public:
 
     PcrProtocol& operator=(const PcrProtocol& rhs)
     {
-		_nOpticalType				= rhs._nOpticalType;
+		_nDetectorType				= rhs._nDetectorType;
 		_nLedIdx					= rhs._nLedIdx;
 		_nLedIntensity				= rhs._nLedIntensity;
 		_nLedStablizationTime_us	= rhs._nLedStablizationTime_us;
-		_nDiodeIdx					= rhs._nDiodeIdx;
-		_nDiodeIntegrationTime_us	= rhs._nDiodeIntegrationTime_us;
+		_nDetectorIdx				= rhs._nDetectorIdx;
+		_nDetectorIntegrationTime_us	= rhs._nDetectorIntegrationTime_us;
 
 		Clear();
         _vSegments.resize(rhs.GetNumSegs());
@@ -300,12 +300,12 @@ public:
 protected:
   
 private:
-	uint32_t	_nOpticalType;
+	uint32_t	_nDetectorType;
 	uint32_t	_nLedIdx;
 	uint32_t	_nLedIntensity;
 	uint32_t	_nLedStablizationTime_us;
-	uint32_t	_nDiodeIdx;
-	uint32_t	_nDiodeIntegrationTime_us;
+	uint32_t	_nDetectorIdx;
+	uint32_t	_nDetectorIntegrationTime_us;
 
     std::vector<Segment> _vSegments;
 };

@@ -39,6 +39,9 @@ public:
     SiteStatus()
         :StreamingObj(MakeObjId('S', 't', 'e', 'S'))
 		, _bRunning(false)
+        , _bPaused(false)
+        , _bCaptureCameraImage(false)
+        , _nCameraIdx(0)
         , _nSegmentIdx(0)
         , _nCycle(0)
         , _nStepIdx(0)
@@ -54,7 +57,7 @@ public:
 	virtual uint32_t GetStreamSize() const
 	{
         uint32_t nSize = StreamingObj::GetStreamSize();
-        nSize += 10 * sizeof(uint32_t);
+        nSize += 13 * sizeof(uint32_t);
 		return nSize;
 	}
 
@@ -63,6 +66,9 @@ public:
         StreamingObj::operator<<(pData);
         uint32_t*   pSrc = (uint32_t*)(pData + StreamingObj::GetStreamSize());
         _bRunning           = swap_uint32(*pSrc++) != 0;
+        _bPaused            = swap_uint32(*pSrc++) != 0;
+        _bCaptureCameraImage= swap_uint32(*pSrc++) != 0;
+        _nCameraIdx         = swap_uint32(*pSrc++);
         _nSegmentIdx        = swap_uint32(*pSrc++);
         _nCycle             = swap_uint32(*pSrc++);
         _nStepIdx           = swap_uint32(*pSrc++);
@@ -79,6 +85,9 @@ public:
         StreamingObj::operator>>(pData);
         uint32_t*   pDst = (uint32_t*)(pData + StreamingObj::GetStreamSize());
         *pDst++ = swap_uint32(_bRunning ? 1 : 0);
+        *pDst++ = swap_uint32(_bPaused ? 1 : 0);
+        *pDst++ = swap_uint32(_bCaptureCameraImage ? 1 : 0);
+        *pDst++ = swap_uint32(_nCameraIdx);
         *pDst++ = swap_uint32(_nSegmentIdx);
         *pDst++ = swap_uint32(_nCycle);
         *pDst++ = swap_uint32(_nStepIdx);
@@ -94,6 +103,12 @@ public:
 	uint32_t    GetTemperature() const			        { return _nTemperature_mC; }
     void        SetRunningFlg(bool b)                   {_bRunning = b;}
     bool        GetRunningFlg() const                   {return _bRunning;}
+    void        SetPausedFlg(bool b)                    {_bPaused = b;}
+    bool        GetPausedFlg() const                    {return _bPaused;}
+    void        SetCaptureCameraImageFlg(bool b)        {_bCaptureCameraImage = b;}
+    bool        GetCaptureCameraImageFlg() const        {return _bCaptureCameraImage;}
+    void        SetCameraIdx(uint32_t nIdx)             {_nCameraIdx = nIdx;}
+    uint32_t    GetCameraIdx()                          {return _nCameraIdx;}
     void        SetTempStableFlg(bool b)                {_bTempStable = b;}
     bool        GetTempStableFlg() const                {return _bTempStable;}
     void        SetStableTimer(uint32_t t)              { _nStableTimer_ms = t; }
@@ -121,37 +136,29 @@ public:
    
     void        NextStep()
                 {
-                    _nStepIdx++;
-                    _nStepTimer_ms = 0;
-                    _nHoldTimer_ms = 0;
-                    _bTempStable = false;
-                    _nStableTimer_ms = 0;
+                    uint32_t nextStep = GetStepIdx() + 1;
+                    ResetForNewStep();
+                    SetStepIdx(nextStep);
                 }
     
     void        NextCycle()
                 {
-                    _nCycle++;
-                    _nStepIdx = 0;
-                    _nStepTimer_ms = 0;
-                    _nHoldTimer_ms = 0;
-                    _bTempStable = false;
-                    _nStableTimer_ms = 0;
+                    uint32_t nextCycle = GetCycle() + 1;
+                    ResetForNewStep();
+                    SetCycle(nextCycle);
                 }
     
     void        NextSegment()
                 {
-                    _nSegmentIdx++;
-                    _nCycle = 0;
-                    _nStepIdx = 0;
-                    _nStepTimer_ms = 0;
-                    _nHoldTimer_ms = 0;
-                    _bTempStable = false;
-                    _nStableTimer_ms = 0;
+                    uint32_t nextSegment = GetSegmentIdx() + 1;
+                    ResetForNewStep();
+                    SetSegmentIdx(nextSegment);
                 }
     
-    void        ResetForNewRun()
+    void        ResetForNewStep()
                 {
-                    _bRunning = false;
+                    _bCaptureCameraImage = false;
+                    _nCameraIdx = 0;
                     _bTempStable = false;
                     _nStableTimer_ms = 0;
                     _nSegmentIdx = 0;
@@ -160,6 +167,14 @@ public:
                     _nStepTimer_ms = 0;
                     _nHoldTimer_ms = 0;
                     _nRunTimer_ms = 0;
+
+                }
+
+    void        ResetForNewRun()
+                {
+                    ResetForNewStep();
+                    _bRunning = false;
+                    _bPaused = false;
                     _nNumThermalRecs = 0;
                     _nNumOpticsRecs = 0;
                 }
@@ -168,6 +183,9 @@ protected:
   
 private:
     bool            _bRunning;
+    bool            _bPaused;
+    bool            _bCaptureCameraImage;
+    uint32_t        _nCameraIdx;
     bool            _bTempStable;
     uint32_t        _nStableTimer_ms;
     uint32_t        _nSegmentIdx;
