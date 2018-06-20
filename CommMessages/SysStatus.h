@@ -150,6 +150,7 @@ public:
     
     void        NextSegment()
                 {
+                    _nCycle = 0;
                     uint32_t nextSegment = GetSegmentIdx() + 1;
                     ResetForNewStep();
                     SetSegmentIdx(nextSegment);
@@ -161,12 +162,9 @@ public:
                     _nCameraIdx = 0;
                     _bTempStable = false;
                     _nStableTimer_ms = 0;
-                    _nSegmentIdx = 0;
-                    _nCycle = 0;
                     _nStepIdx = 0;
                     _nStepTimer_ms = 0;
                     _nHoldTimer_ms = 0;
-                    _nRunTimer_ms = 0;
 
                 }
 
@@ -175,6 +173,9 @@ public:
                     ResetForNewStep();
                     _bRunning = false;
                     _bPaused = false;
+                    _nCycle = 0;
+                    _nSegmentIdx = 0;
+                    _nRunTimer_ms = 0;
                     _nNumThermalRecs = 0;
                     _nNumOpticsRecs = 0;
                 }
