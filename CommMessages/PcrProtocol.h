@@ -17,6 +17,7 @@ public:
 		, _nLedStablizationTime_us(0)
 		, _nDetectorIdx(0)
 		, _nDetectorIntegrationTime_us(0)
+        , _nReferenceIdx(0)
 	{
 	}
 
@@ -34,6 +35,9 @@ public:
 	uint32_t    GetDetectorIdx() const							{ return _nDetectorIdx; }
 	void        SetDetectorIntegrationTime(uint32_t nTime_us)	{ _nDetectorIntegrationTime_us = nTime_us; }
 	uint32_t    GetDetectorIntegrationTime() const				{ return _nDetectorIntegrationTime_us; }
+	void        SetReferenceIdx(uint32_t idx)                    {_nReferenceIdx = idx; }
+	uint32_t    GetReferenceIdx() const                          { return _nReferenceIdx; }
+
 
 	virtual uint32_t GetStreamSize() const
 	{
@@ -43,6 +47,7 @@ public:
 		nSize += sizeof(_nLedStablizationTime_us);
 		nSize += sizeof(_nDetectorIdx);
 		nSize += sizeof(_nDetectorIntegrationTime_us);
+		nSize += sizeof(_nReferenceIdx);
 		return nSize;
 	}
 
@@ -55,6 +60,7 @@ public:
 		_nLedStablizationTime_us		= swap_uint32(*pSrc++);
 		_nDetectorIdx					= swap_uint32(*pSrc++);
 		_nDetectorIntegrationTime_us	= swap_uint32(*pSrc++);
+		_nReferenceIdx                  = swap_uint32(*pSrc++);
 	}
 
 	virtual void    operator>>(uint8_t* pData)
@@ -66,6 +72,7 @@ public:
 		*pDst++ = swap_uint32(_nLedStablizationTime_us);
 		*pDst++ = swap_uint32(_nDetectorIdx);
 		*pDst++ = swap_uint32(_nDetectorIntegrationTime_us);
+		*pDst++ = swap_uint32(_nReferenceIdx);
 	}
 
 protected:
@@ -76,6 +83,7 @@ private:
 	uint32_t	_nLedStablizationTime_us;
 	uint32_t	_nDetectorIdx;
 	uint32_t	_nDetectorIntegrationTime_us;
+	uint32_t    _nReferenceIdx;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
