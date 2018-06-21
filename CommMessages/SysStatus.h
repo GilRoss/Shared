@@ -17,7 +17,8 @@ public:
     uint32_t    _nDetectorIdx;
     uint32_t    _nDarkRead;
     uint32_t    _nIlluminatedRead;
-    uint32_t    _nReferenceRead;
+    uint32_t    _nRefDarkRead;
+    uint32_t    _nRefIlluminatedRead;
     int32_t     _nShuttleTemp_mC;
 };
 
