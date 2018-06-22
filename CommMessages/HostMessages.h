@@ -15,6 +15,7 @@ enum ErrCode: uint32_t
 	kDeviceCommErr,
 	kRunInProgressErr,
 	kInvalidCmdParams,
+	kMemoryMappingErr,
 };
 
 ///////////////////////////////////////////////////////////////////////////////
