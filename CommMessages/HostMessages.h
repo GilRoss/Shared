@@ -213,6 +213,8 @@ public:
 			_arOpticsRecs[i]._nDarkRead		    = swap_uint32(*pSrc++);
 			_arOpticsRecs[i]._nIlluminatedRead	= swap_uint32(*pSrc++);
 			_arOpticsRecs[i]._nShuttleTemp_mC	= swap_uint32(*pSrc++);
+			_arOpticsRecs[i]._nRefIlluminatedRead = swap_uint32(*pSrc++);
+			_arOpticsRecs[i]._nRefDarkRead      = swap_uint32(*pSrc++);
 		}
 	}
 
@@ -229,6 +231,8 @@ public:
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nDarkRead);
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nIlluminatedRead);
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nShuttleTemp_mC);
+			*pDst++ = swap_uint32(_arOpticsRecs[i]._nRefIlluminatedRead);
+			*pDst++ = swap_uint32(_arOpticsRecs[i]._nRefDarkRead);
 		}
 	}
 
