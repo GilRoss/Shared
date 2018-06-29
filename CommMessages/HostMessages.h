@@ -240,6 +240,80 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+class GetPidInfoRes : public HostMsg
+{
+public:
+	enum PidType : uint32_t
+	{
+		kTemperature,
+		kCurrent
+	};
+
+	GetPidInfoRes()
+		:HostMsg(MakeObjId('G', 'P', 'i', 'd'))
+		, _nPidType(kTemperature)
+		, _nPGain(0)
+		, _nIGain(0)
+		, _nDGain(0)
+	{
+	}
+
+	virtual ~GetPidInfoRes()
+	{
+	}
+
+	void				SetType(uint32_t nGain) { _nPidType = nGain; }
+	uint32_t			GetType() { return _nPidType; }
+	void				SetPGain(uint32_t nGain) { _nPGain = nGain; }
+	uint32_t			GetPGain() { return _nPGain; }
+	void				SetIGain(uint32_t nGain) { _nIGain = nGain; }
+	uint32_t			GetIGain() { return _nIGain; }
+	void				SetDGain(uint32_t nGain) { _nDGain = nGain; }
+	uint32_t			GetDGain() { return _nDGain; }
+
+	virtual uint32_t GetStreamSize() const
+	{
+		uint32_t nSize = HostMsg::GetStreamSize();
+		nSize += sizeof(_nPidType);
+		nSize += sizeof(_nPGain);
+		nSize += sizeof(_nIGain);
+		nSize += sizeof(_nDGain);
+		return nSize;
+	}
+
+	virtual void     operator<<(const uint8_t* pData)
+	{
+		HostMsg::operator<<(pData);
+		uint32_t*	pSrc = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
+
+		_nPidType	= swap_uint32(*pSrc++);
+		_nPGain		= swap_uint32(*pSrc++);
+		_nIGain		= swap_uint32(*pSrc++);
+		_nDGain		= swap_uint32(*pSrc++);
+	}
+
+	virtual void     operator>>(uint8_t* pData)
+	{
+		HostMsg::operator>>(pData);
+		uint32_t*	pDst = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
+
+		*pDst++ = swap_uint32(_nPidType);
+		*pDst++ = swap_uint32(_nPGain);
+		*pDst++ = swap_uint32(_nIGain);
+		*pDst++ = swap_uint32(_nDGain);
+	}
+
+protected:
+
+private:
+	uint32_t		_nPidType;
+	uint32_t		_nPGain;
+	uint32_t		_nIGain;
+	uint32_t		_nDGain;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 class GetThermalRecsRes : public HostMsg
 {
 public:
@@ -670,31 +744,35 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-class SetPidParamsReq : public HostMsg
+class SetPidInfoReq : public HostMsg
 {
 public:
-    SetPidParamsReq()
+	SetPidInfoReq()
         :HostMsg(MakeObjId('S', 'P', 'i', 'd'))
-        ,_nKp(0)
-        ,_nKi(0)
-        ,_nKd(0)
+		, _nPidType(GetPidInfoRes::kTemperature)
+		, _nKp(0)
+		, _nKi(0)
+        , _nKd(0)
     {
     }
 
-    virtual ~SetPidParamsReq()
+    virtual ~SetPidInfoReq()
     {
     }
     
-    void        SetKp(uint32_t nKp)         {_nKp = nKp;}
-    uint32_t    GetKp() const               {return _nKp;}    
-    void        SetKi(uint32_t nKi)         {_nKi = nKi;}
-    uint32_t    GetKi() const               {return _nKi;}    
-    void        SetKd(uint32_t nKd)         {_nKd = nKd;}
-    uint32_t    GetKd() const               {return _nKd;}    
+	void				SetType(uint32_t nGain) { _nPidType = nGain; }
+	uint32_t			GetType() { return _nPidType; }
+	void				SetPGain(uint32_t nGain) { _nKp = nGain; }
+	uint32_t			GetPGain() { return _nKp; }
+	void				SetIGain(uint32_t nGain) { _nKi = nGain; }
+	uint32_t			GetIGain() { return _nKi; }
+	void				SetDGain(uint32_t nGain) { _nKd = nGain; }
+	uint32_t			GetDGain() { return _nKd; }
 
 	virtual uint32_t GetStreamSize() const
 	{
 		int nSize = HostMsg::GetStreamSize();
+		nSize += sizeof(_nPidType);
 		nSize += sizeof(_nKp);
 		nSize += sizeof(_nKi);
 		nSize += sizeof(_nKd);
@@ -705,15 +783,17 @@ public:
     {
         HostMsg::operator<<(pData);
 		uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_nKp	= swap_uint32(*pSrc++);
-		_nKi	= swap_uint32(*pSrc++);
-		_nKd	= swap_uint32(*pSrc++);
+		_nPidType	= swap_uint32(*pSrc++);
+		_nKp		= swap_uint32(*pSrc++);
+		_nKi		= swap_uint32(*pSrc++);
+		_nKd		= swap_uint32(*pSrc++);
 	}
 
     virtual void     operator>>(uint8_t* pData)
     {
 		HostMsg::operator>>(pData);
 		uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
+		*pDst++ = swap_uint32(_nPidType);
 		*pDst++ = swap_uint32(_nKp);
 		*pDst++ = swap_uint32(_nKi);
 		*pDst++ = swap_uint32(_nKd);
@@ -722,6 +802,7 @@ public:
 protected:
   
 private:
+	uint32_t    _nPidType;
     uint32_t    _nKp;
     uint32_t    _nKi;
     uint32_t    _nKd;
