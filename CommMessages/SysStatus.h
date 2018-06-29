@@ -112,7 +112,7 @@ public:
     void        SetCaptureCameraImageFlg(bool b)        {_bCaptureCameraImage = b;}
     bool        GetCaptureCameraImageFlg() const        {return _bCaptureCameraImage;}
     void        SetCameraIdx(uint32_t nIdx)             {_nCameraIdx = nIdx;}
-    uint32_t    GetCameraIdx()                          {return _nCameraIdx;}
+    uint32_t    GetCameraIdx() const                    {return _nCameraIdx;}
     void        SetTempStableFlg(bool b)                {_bTempStable = b;}
     bool        GetTempStableFlg() const                {return _bTempStable;}
     void        SetStableTimer(uint32_t t)              { _nStableTimer_ms = t; }
