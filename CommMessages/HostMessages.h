@@ -20,6 +20,14 @@ enum ErrCode: uint32_t
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+enum PidType : uint32_t
+{
+    kTemperature,
+    kCurrent
+};
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 class HostMsg : public StreamingObj
 {
 public:
@@ -29,7 +37,7 @@ public:
         : StreamingObj(nMsgId)
 		, _nSize(0)
 		, _nTransId(0)
-		, _nError(0)
+		, _nError(ErrCode::kNoError)
     {
     }
  
@@ -41,12 +49,20 @@ public:
 	uint32_t        GetMsgSize() const				{ return _nSize; }
 	void            SetTransId(uint32_t nTransId)   {_nTransId = nTransId;}
     uint32_t        GetTransId() const              {return _nTransId;}
-    void            SetError(uint32_t nError)       {_nError = nError;}
-	uint32_t        GetError() const				{ return _nError; }
+    void            SetError(ErrCode nError)        {_nError = nError;}
+    ErrCode         GetError() const				{ return _nError; }
+
+    void    SetResponseHeader(HostMsg& requestMsg, ErrCode nErrCode = ErrCode::kNoError)
+    {
+        SetObjId(requestMsg.GetObjId());
+        SetMsgSize(GetStreamSize());
+        SetTransId(requestMsg.GetTransId());
+        SetError(nErrCode);
+    }
 	
 	virtual uint32_t GetStreamSize() const 
 	{
-		return StreamingObj::GetStreamSize() + (3 * sizeof(uint32_t));
+		return StreamingObj::GetStreamSize() + sizeof(_nSize) + sizeof(_nTransId) + sizeof(_nError);
 	}
 	
 	virtual void     operator<<(const uint8_t* pData)
@@ -55,7 +71,7 @@ public:
         uint32_t*   pSrc = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 		_nSize      = swap_uint32(*pSrc++);
 		_nTransId   = swap_uint32(*pSrc++);
-		_nError     = swap_uint32(*pSrc++);
+		_nError     = (ErrCode)swap_uint32(*pSrc++);
     }
 
     virtual void     operator>>(uint8_t* pData)
@@ -72,7 +88,7 @@ protected:
 private:
 	uint32_t    _nSize;
 	uint32_t    _nTransId;
-    uint32_t    _nError;
+	ErrCode     _nError;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -244,76 +260,117 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-class GetPidInfoRes : public HostMsg
+class GetPidParamsRes : public HostMsg
 {
 public:
-	enum PidType : uint32_t
-	{
-		kTemperature,
-		kCurrent
-	};
+    GetPidParamsRes()
+        :HostMsg(MakeObjId('G', 'P', 'i', 'd'))
+        , _nPidType(kTemperature)
+        , _nPGain(0)
+        , _nIGain(0)
+        , _nDGain(0)
+    {
+    }
 
-	GetPidInfoRes()
-		:HostMsg(MakeObjId('G', 'P', 'i', 'd'))
-		, _nPidType(kTemperature)
-		, _nPGain(0)
-		, _nIGain(0)
-		, _nDGain(0)
-	{
-	}
+    virtual ~GetPidParamsRes()
+    {
+    }
 
-	virtual ~GetPidInfoRes()
-	{
-	}
+    void            SetType(PidType n)      { _nPidType = n; }
+    PidType         GetType()               { return _nPidType; }
+    void            SetPGain(uint32_t n)    { _nPGain = n; }
+    uint32_t        GetPGain()              { return _nPGain; }
+    void            SetIGain(uint32_t n)    { _nIGain = n; }
+    uint32_t        GetIGain()              { return _nIGain; }
+    void            SetDGain(uint32_t n)    { _nDGain = n; }
+    uint32_t        GetDGain()              { return _nDGain; }
 
-	void				SetType(uint32_t nGain) { _nPidType = nGain; }
-	uint32_t			GetType() { return _nPidType; }
-	void				SetPGain(uint32_t nGain) { _nPGain = nGain; }
-	uint32_t			GetPGain() { return _nPGain; }
-	void				SetIGain(uint32_t nGain) { _nIGain = nGain; }
-	uint32_t			GetIGain() { return _nIGain; }
-	void				SetDGain(uint32_t nGain) { _nDGain = nGain; }
-	uint32_t			GetDGain() { return _nDGain; }
+    virtual uint32_t GetStreamSize() const
+    {
+        uint32_t nSize = HostMsg::GetStreamSize();
+        nSize += sizeof(_nPidType);
+        nSize += sizeof(_nPGain);
+        nSize += sizeof(_nIGain);
+        nSize += sizeof(_nDGain);
+        return nSize;
+    }
 
-	virtual uint32_t GetStreamSize() const
-	{
-		uint32_t nSize = HostMsg::GetStreamSize();
-		nSize += sizeof(_nPidType);
-		nSize += sizeof(_nPGain);
-		nSize += sizeof(_nIGain);
-		nSize += sizeof(_nDGain);
-		return nSize;
-	}
+    virtual void     operator<<(const uint8_t* pData)
+    {
+        HostMsg::operator<<(pData);
+        uint32_t*   pSrc = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
 
-	virtual void     operator<<(const uint8_t* pData)
-	{
-		HostMsg::operator<<(pData);
-		uint32_t*	pSrc = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
+        _nPidType   = (PidType)swap_uint32(*pSrc++);
+        _nPGain     = swap_uint32(*pSrc++);
+        _nIGain     = swap_uint32(*pSrc++);
+        _nDGain     = swap_uint32(*pSrc++);
+    }
 
-		_nPidType	= swap_uint32(*pSrc++);
-		_nPGain		= swap_uint32(*pSrc++);
-		_nIGain		= swap_uint32(*pSrc++);
-		_nDGain		= swap_uint32(*pSrc++);
-	}
+    virtual void     operator>>(uint8_t* pData)
+    {
+        HostMsg::operator>>(pData);
+        uint32_t*   pDst = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
 
-	virtual void     operator>>(uint8_t* pData)
-	{
-		HostMsg::operator>>(pData);
-		uint32_t*	pDst = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
-
-		*pDst++ = swap_uint32(_nPidType);
-		*pDst++ = swap_uint32(_nPGain);
-		*pDst++ = swap_uint32(_nIGain);
-		*pDst++ = swap_uint32(_nDGain);
-	}
+        *pDst++ = swap_uint32(_nPidType);
+        *pDst++ = swap_uint32(_nPGain);
+        *pDst++ = swap_uint32(_nIGain);
+        *pDst++ = swap_uint32(_nDGain);
+    }
 
 protected:
 
 private:
-	uint32_t		_nPidType;
-	uint32_t		_nPGain;
-	uint32_t		_nIGain;
-	uint32_t		_nDGain;
+    PidType         _nPidType;
+    uint32_t        _nPGain;
+    uint32_t        _nIGain;
+    uint32_t        _nDGain;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+class GetPidParamsReq : public HostMsg
+{
+public:
+    GetPidParamsReq()
+        :HostMsg(MakeObjId('G', 'P', 'i', 'd'))
+        , _nPidType(kTemperature)
+    {
+    }
+
+    virtual ~GetPidParamsReq()
+    {
+    }
+
+    void            SetType(PidType n)      { _nPidType = n; }
+    PidType         GetType()               { return _nPidType; }
+
+    virtual uint32_t GetStreamSize() const
+    {
+        uint32_t nSize = HostMsg::GetStreamSize();
+        nSize += sizeof(_nPidType);
+        return nSize;
+    }
+
+    virtual void     operator<<(const uint8_t* pData)
+    {
+        HostMsg::operator<<(pData);
+        uint32_t*   pSrc = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
+
+        _nPidType   = (PidType)swap_uint32(*pSrc++);
+    }
+
+    virtual void     operator>>(uint8_t* pData)
+    {
+        HostMsg::operator>>(pData);
+        uint32_t*   pDst = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
+
+        *pDst++ = swap_uint32(_nPidType);
+    }
+
+protected:
+
+private:
+    PidType         _nPidType;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -748,30 +805,30 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-class SetPidInfoReq : public HostMsg
+class SetPidParamsReq : public HostMsg
 {
 public:
-	SetPidInfoReq()
+    SetPidParamsReq()
         :HostMsg(MakeObjId('S', 'P', 'i', 'd'))
-		, _nPidType(GetPidInfoRes::kTemperature)
+		, _nPidType(PidType::kTemperature)
 		, _nKp(0)
 		, _nKi(0)
         , _nKd(0)
     {
     }
 
-    virtual ~SetPidInfoReq()
+    virtual ~SetPidParamsReq()
     {
     }
     
-	void				SetType(uint32_t nGain) { _nPidType = nGain; }
-	uint32_t			GetType() { return _nPidType; }
-	void				SetPGain(uint32_t nGain) { _nKp = nGain; }
-	uint32_t			GetPGain() { return _nKp; }
-	void				SetIGain(uint32_t nGain) { _nKi = nGain; }
-	uint32_t			GetIGain() { return _nKi; }
-	void				SetDGain(uint32_t nGain) { _nKd = nGain; }
-	uint32_t			GetDGain() { return _nKd; }
+	void        SetType(PidType n)      { _nPidType = n; }
+	PidType	    GetType()               { return _nPidType; }
+	void        SetPGain(uint32_t n)    { _nKp = n; }
+	uint32_t    GetPGain()              { return _nKp; }
+	void        SetIGain(uint32_t n)    { _nKi = n; }
+	uint32_t    GetIGain()              { return _nKi; }
+	void        SetDGain(uint32_t n)    { _nKd = n; }
+	uint32_t    GetDGain()              { return _nKd; }
 
 	virtual uint32_t GetStreamSize() const
 	{
@@ -787,7 +844,7 @@ public:
     {
         HostMsg::operator<<(pData);
 		uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_nPidType	= swap_uint32(*pSrc++);
+		_nPidType	= (PidType)swap_uint32(*pSrc++);
 		_nKp		= swap_uint32(*pSrc++);
 		_nKi		= swap_uint32(*pSrc++);
 		_nKd		= swap_uint32(*pSrc++);
@@ -806,7 +863,7 @@ public:
 protected:
   
 private:
-	uint32_t    _nPidType;
+    PidType     _nPidType;
     uint32_t    _nKp;
     uint32_t    _nKi;
     uint32_t    _nKd;

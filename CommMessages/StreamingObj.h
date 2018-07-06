@@ -32,7 +32,10 @@ public:
 #endif
 
 
-	virtual uint32_t GetStreamSize() const			{ return 2 * sizeof(uint32_t); }
+	virtual uint32_t GetStreamSize() const
+	{
+	    return sizeof(_nObjId) + sizeof(_nVersion);
+	}
 
     virtual void     operator<<(const uint8_t* pData)
     {
