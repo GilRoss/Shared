@@ -23,7 +23,8 @@ enum ErrCode: uint32_t
 enum PidType : uint32_t
 {
     kTemperature,
-    kCurrent
+    kCurrent,
+	kNumPidTypes
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -269,6 +270,8 @@ public:
         , _nPGain(0)
         , _nIGain(0)
         , _nDGain(0)
+        , _nSlope_m(1000)
+        , _nYIntercept_m(0)
     {
     }
 
@@ -276,14 +279,18 @@ public:
     {
     }
 
-    void            SetType(PidType n)      { _nPidType = n; }
-    PidType         GetType()               { return _nPidType; }
-    void            SetPGain(uint32_t n)    { _nPGain = n; }
-    uint32_t        GetPGain()              { return _nPGain; }
-    void            SetIGain(uint32_t n)    { _nIGain = n; }
-    uint32_t        GetIGain()              { return _nIGain; }
-    void            SetDGain(uint32_t n)    { _nDGain = n; }
-    uint32_t        GetDGain()              { return _nDGain; }
+    void            SetType(PidType n)          { _nPidType = n; }
+    PidType         GetType()                   { return _nPidType; }
+    void            SetPGain(uint32_t n)        { _nPGain = n; }
+    uint32_t        GetPGain()                  { return _nPGain; }
+    void            SetIGain(uint32_t n)        { _nIGain = n; }
+    uint32_t        GetIGain()                  { return _nIGain; }
+    void            SetDGain(uint32_t n)        { _nDGain = n; }
+    uint32_t        GetDGain()                  { return _nDGain; }
+    void            SetSlope(uint32_t n)        { _nSlope_m = n; }
+    uint32_t        GetSlope()                  { return _nSlope_m; }
+    void            SetYIntercept(uint32_t n)   { _nYIntercept_m = n; }
+    uint32_t        GetYIntercept()             { return _nYIntercept_m; }
 
     virtual uint32_t GetStreamSize() const
     {
@@ -292,6 +299,8 @@ public:
         nSize += sizeof(_nPGain);
         nSize += sizeof(_nIGain);
         nSize += sizeof(_nDGain);
+        nSize += sizeof(_nSlope_m);
+        nSize += sizeof(_nYIntercept_m);
         return nSize;
     }
 
@@ -300,10 +309,12 @@ public:
         HostMsg::operator<<(pData);
         uint32_t*   pSrc = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
 
-        _nPidType   = (PidType)swap_uint32(*pSrc++);
-        _nPGain     = swap_uint32(*pSrc++);
-        _nIGain     = swap_uint32(*pSrc++);
-        _nDGain     = swap_uint32(*pSrc++);
+        _nPidType       = (PidType)swap_uint32(*pSrc++);
+        _nPGain         = swap_uint32(*pSrc++);
+        _nIGain         = swap_uint32(*pSrc++);
+        _nDGain         = swap_uint32(*pSrc++);
+        _nSlope_m       = swap_uint32(*pSrc++);
+        _nYIntercept_m  = swap_uint32(*pSrc++);
     }
 
     virtual void     operator>>(uint8_t* pData)
@@ -315,6 +326,8 @@ public:
         *pDst++ = swap_uint32(_nPGain);
         *pDst++ = swap_uint32(_nIGain);
         *pDst++ = swap_uint32(_nDGain);
+        *pDst++ = swap_uint32(_nSlope_m);
+        *pDst++ = swap_uint32(_nYIntercept_m);
     }
 
 protected:
@@ -324,6 +337,8 @@ private:
     uint32_t        _nPGain;
     uint32_t        _nIGain;
     uint32_t        _nDGain;
+    int32_t         _nSlope_m;      //y = mx + b.
+    int32_t         _nYIntercept_m; //y = mx + b.
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -814,6 +829,8 @@ public:
 		, _nKp(0)
 		, _nKi(0)
         , _nKd(0)
+        , _nSlope_m(1000)
+        , _nYIntercept_m(0)
     {
     }
 
@@ -821,14 +838,18 @@ public:
     {
     }
     
-	void        SetType(PidType n)      { _nPidType = n; }
-	PidType	    GetType()               { return _nPidType; }
-	void        SetPGain(uint32_t n)    { _nKp = n; }
-	uint32_t    GetPGain()              { return _nKp; }
-	void        SetIGain(uint32_t n)    { _nKi = n; }
-	uint32_t    GetIGain()              { return _nKi; }
-	void        SetDGain(uint32_t n)    { _nKd = n; }
-	uint32_t    GetDGain()              { return _nKd; }
+	void        SetType(PidType n)          { _nPidType = n; }
+	PidType	    GetType()                   { return _nPidType; }
+	void        SetPGain(uint32_t n)        { _nKp = n; }
+	uint32_t    GetPGain()                  { return _nKp; }
+	void        SetIGain(uint32_t n)        { _nKi = n; }
+	uint32_t    GetIGain()                  { return _nKi; }
+    void        SetDGain(uint32_t n)        { _nKd = n; }
+    uint32_t    GetDGain()                  { return _nKd; }
+    void        SetSlope(uint32_t n)        { _nSlope_m = n; }
+    uint32_t    GetSlope()                  { return _nSlope_m; }
+    void        SetYIntercept(uint32_t n)   { _nYIntercept_m = n; }
+    uint32_t    GetYIntercept()             { return _nYIntercept_m; }
 
 	virtual uint32_t GetStreamSize() const
 	{
@@ -836,7 +857,9 @@ public:
 		nSize += sizeof(_nPidType);
 		nSize += sizeof(_nKp);
 		nSize += sizeof(_nKi);
-		nSize += sizeof(_nKd);
+        nSize += sizeof(_nKd);
+        nSize += sizeof(_nSlope_m);
+        nSize += sizeof(_nYIntercept_m);
 		return nSize;
 	}
 
@@ -844,10 +867,12 @@ public:
     {
         HostMsg::operator<<(pData);
 		uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_nPidType	= (PidType)swap_uint32(*pSrc++);
-		_nKp		= swap_uint32(*pSrc++);
-		_nKi		= swap_uint32(*pSrc++);
-		_nKd		= swap_uint32(*pSrc++);
+		_nPidType	    = (PidType)swap_uint32(*pSrc++);
+		_nKp		    = swap_uint32(*pSrc++);
+		_nKi		    = swap_uint32(*pSrc++);
+        _nKd            = swap_uint32(*pSrc++);
+        _nSlope_m       = swap_uint32(*pSrc++);
+        _nYIntercept_m  = swap_uint32(*pSrc++);
 	}
 
     virtual void     operator>>(uint8_t* pData)
@@ -857,7 +882,9 @@ public:
 		*pDst++ = swap_uint32(_nPidType);
 		*pDst++ = swap_uint32(_nKp);
 		*pDst++ = swap_uint32(_nKi);
-		*pDst++ = swap_uint32(_nKd);
+        *pDst++ = swap_uint32(_nKd);
+        *pDst++ = swap_uint32(_nSlope_m);
+        *pDst++ = swap_uint32(_nYIntercept_m);
 	}
 
 protected:
@@ -867,6 +894,8 @@ private:
     uint32_t    _nKp;
     uint32_t    _nKi;
     uint32_t    _nKd;
+    int32_t     _nSlope_m;      //y = mx + b.
+    int32_t     _nYIntercept_m; //y = mx + b.
 };
 
 ///////////////////////////////////////////////////////////////////////////////
