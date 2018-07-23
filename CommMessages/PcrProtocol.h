@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 #include "StreamingObj.h"
+#include "Common.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -35,8 +36,8 @@ public:
 	uint32_t    GetDetectorIdx() const							{ return _nDetectorIdx; }
 	void        SetDetectorIntegrationTime(uint32_t nTime_us)	{ _nDetectorIntegrationTime_us = nTime_us; }
 	uint32_t    GetDetectorIntegrationTime() const				{ return _nDetectorIntegrationTime_us; }
-	void        SetReferenceIdx(uint32_t idx)                    {_nReferenceIdx = idx; }
-	uint32_t    GetReferenceIdx() const                          { return _nReferenceIdx; }
+	void        SetReferenceIdx(uint32_t idx)                   {_nReferenceIdx = idx; }
+	uint32_t    GetReferenceIdx() const                         { return _nReferenceIdx; }
 
 
 	virtual uint32_t GetStreamSize() const
@@ -256,15 +257,9 @@ private:
 class PcrProtocol : public StreamingObj
 {
 public:
-	enum DetectorType : uint32_t
-	{
-		kPhotoDiode,
-		kCamera
-	};
-
     PcrProtocol()
         :StreamingObj(MakeObjId('P','r','o','t'))
-		, _nDetectorType(DetectorType::kPhotoDiode)
+		, _nFluorDetectorType(FluorDetectorType::kPhotoDiode)
 	{
     }
 
@@ -272,8 +267,8 @@ public:
     {
     }
 
-	void				SetDetectorType(uint32_t n)		    { _nDetectorType = n; }
-	uint32_t			GetDetectorType() const			    { return _nDetectorType; }
+	void				SetFluorDetectorType(FluorDetectorType n)   { _nFluorDetectorType = n; }
+	FluorDetectorType   GetFluorDetectorType() const	            { return _nFluorDetectorType; }
 
 	uint32_t			GetNumOpticalReads() const			{ return (uint32_t)_vOpticalReads.size(); }
 	const OpticalRead&	GetOpticalRead(uint32_t idx) const	{ return _vOpticalReads[idx]; }
@@ -302,7 +297,7 @@ public:
     virtual uint32_t        GetStreamSize() const
     {
         uint32_t nSize = StreamingObj::GetStreamSize();
-		nSize += sizeof(_nDetectorType);
+		nSize += sizeof(_nFluorDetectorType);
 
 		nSize += sizeof(uint32_t); //Number of optics channels.
 		for (int i = 0; i < (int)_vOpticalReads.size(); i++)
@@ -320,7 +315,7 @@ public:
         StreamingObj::operator<<(pData);
 		uint32_t*   pSrc = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 
-		_nDetectorType				= swap_uint32(*pSrc++);
+		_nFluorDetectorType = (FluorDetectorType)(swap_uint32(*pSrc++));
 		_vOpticalReads.clear();
 		int nNumOpticalReads = swap_uint32(*pSrc++);
 		_vOpticalReads.resize(nNumOpticalReads);
@@ -345,7 +340,7 @@ public:
         StreamingObj::operator>>(pData);
 		uint32_t*   pDst = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
 
-		*pDst++ = swap_uint32(_nDetectorType);
+		*pDst++ = swap_uint32(_nFluorDetectorType);
 		*pDst++ = swap_uint32((uint32_t)_vOpticalReads.size());
 		for (int i = 0; i < (int)_vOpticalReads.size(); i++)
 		{
@@ -363,7 +358,7 @@ public:
 
     PcrProtocol& operator=(const PcrProtocol& rhs)
     {
-		_nDetectorType	= rhs._nDetectorType;
+        _nFluorDetectorType	= rhs._nFluorDetectorType;
 		_vOpticalReads.clear();
 		_vOpticalReads.resize(rhs.GetNumOpticalReads());
 		for (int nIdx = 0; nIdx < (int)rhs.GetNumOpticalReads(); nIdx++)
@@ -380,7 +375,7 @@ public:
 protected:
   
 private:
-	uint32_t					_nDetectorType;
+    FluorDetectorType			_nFluorDetectorType;
 	std::vector<OpticalRead>	_vOpticalReads;
 	std::vector<Segment>		_vSegments;
 };
