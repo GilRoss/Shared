@@ -12,19 +12,19 @@
 uint32_t MsgTransaction(HostMsg& request, HostMsg* pResponse);
 
 // Open device communications port.
-extern "C" AMPDETECTLIBRARY_API int OpenComm(const char* pPortName);
+extern "C" int AMPDETECTLIBRARY_API OpenComm(const char* pPortName);
 
 // Close device communications port.
-extern "C" AMPDETECTLIBRARY_API int CloseComm();
+extern "C" int AMPDETECTLIBRARY_API CloseComm();
 
 // Determine if device communications port is open.
-extern "C" AMPDETECTLIBRARY_API bool IsPortOpenFlg();
+extern "C" bool AMPDETECTLIBRARY_API IsPortOpenFlg();
 
 // Set LED state.
-extern "C" AMPDETECTLIBRARY_API int SetOpticsLed(int nSiteIdx, int nLedIdx, int nLedIntensity, int nLedDuration_us);
+extern "C" int AMPDETECTLIBRARY_API SetOpticsLed(int nSiteIdx, int nLedIdx, int nLedIntensity, int nLedDuration_us);
 
 // Get Diode value.
-extern "C" AMPDETECTLIBRARY_API int GetDiodeValue(int nDiodeIdx, int* data);
+extern "C" int AMPDETECTLIBRARY_API GetDiodeValue(int nDiodeIdx, int* data);
 
 // Read Optics.
-extern "C" AMPDETECTLIBRARY_API int ReadOptics(int nDiodeIdx, int nLedIdx, int nLedIntensity, int nIntegrationTime_us, int* data);
+extern "C" int AMPDETECTLIBRARY_API ReadOptics(int nDiodeIdx, int nLedIdx, int nLedIntensity, int nIntegrationTime_us, int* data);
