@@ -9,6 +9,12 @@
 #define AMPDETECTLIBRARY_API __declspec(dllimport)
 #endif
 
+enum DllErrors : int
+{
+	kNoError = 0,
+	kSiteNotConnected = 1000
+};
+
 uint32_t MsgTransaction(HostMsg& request, HostMsg* pResponse);
 
 // Open device communications port.
