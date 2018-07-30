@@ -15,7 +15,8 @@ enum ErrCode: uint32_t
     kNoError = 0,
 	kDeviceCommErr,
 	kRunInProgressErr,
-	kInvalidCmdParams
+    kInvalidCmdParamsErr,
+    kWriteToFlashErr
 };
 
 ///////////////////////////////////////////////////////////////////////////////
