@@ -46,6 +46,8 @@ public:
         , _bPaused(false)
         , _bCaptureCameraImage(false)
         , _nCameraIdx(0)
+        , _nCameraExposure(0)
+        , _nLedIntensity(0)
         , _nSegmentIdx(0)
         , _nCycle(0)
         , _nStepIdx(0)
@@ -61,7 +63,7 @@ public:
 	virtual uint32_t GetStreamSize() const
 	{
         uint32_t nSize = StreamingObj::GetStreamSize();
-        nSize += 13 * sizeof(uint32_t);
+        nSize += 15 * sizeof(uint32_t);
 		return nSize;
 	}
 
@@ -73,6 +75,8 @@ public:
         _bPaused            = swap_uint32(*pSrc++) != 0;
         _bCaptureCameraImage= swap_uint32(*pSrc++) != 0;
         _nCameraIdx         = swap_uint32(*pSrc++);
+        _nCameraExposure    = swap_uint32(*pSrc++);
+        _nLedIntensity      = swap_uint32(*pSrc++);
         _nSegmentIdx        = swap_uint32(*pSrc++);
         _nCycle             = swap_uint32(*pSrc++);
         _nStepIdx           = swap_uint32(*pSrc++);
@@ -92,6 +96,8 @@ public:
         *pDst++ = swap_uint32(_bPaused ? 1 : 0);
         *pDst++ = swap_uint32(_bCaptureCameraImage ? 1 : 0);
         *pDst++ = swap_uint32(_nCameraIdx);
+        *pDst++ = swap_uint32(_nCameraExposure);
+        *pDst++ = swap_uint32(_nLedIntensity);
         *pDst++ = swap_uint32(_nSegmentIdx);
         *pDst++ = swap_uint32(_nCycle);
         *pDst++ = swap_uint32(_nStepIdx);
@@ -113,6 +119,10 @@ public:
     bool        GetCaptureCameraImageFlg() const        {return _bCaptureCameraImage;}
     void        SetCameraIdx(uint32_t nIdx)             {_nCameraIdx = nIdx;}
     uint32_t    GetCameraIdx() const                    {return _nCameraIdx;}
+    void        SetCameraExposure(uint32_t nExposure)   {_nCameraExposure = nExposure;}
+    uint32_t    GetCameraExposure() const               {return _nCameraExposure;}
+    void        SetLedIntensity(uint32_t nLedIntensity) {_nLedIntensity = nLedIntensity;}
+    uint32_t    GetLedIntensity() const                 {return _nLedIntensity;}
     void        SetTempStableFlg(bool b)                {_bTempStable = b;}
     bool        GetTempStableFlg() const                {return _bTempStable;}
     void        SetStableTimer(uint32_t t)              { _nStableTimer_ms = t; }
@@ -162,8 +172,11 @@ public:
     
     void        ResetForNewStep()
                 {
+                    _bPaused = false;
                     _bCaptureCameraImage = false;
                     _nCameraIdx = 0;
+                    _nCameraExposure = 0;
+                    _nLedIntensity = 0;
                     _bTempStable = false;
                     _nStableTimer_ms = 0;
                     _nStepIdx = 0;
@@ -191,6 +204,8 @@ private:
     bool            _bPaused;
     bool            _bCaptureCameraImage;
     uint32_t        _nCameraIdx;
+    uint32_t        _nCameraExposure;
+    uint32_t        _nLedIntensity;
     bool            _bTempStable;
     uint32_t        _nStableTimer_ms;
     uint32_t        _nSegmentIdx;
