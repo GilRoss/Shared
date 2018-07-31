@@ -2,6 +2,7 @@
 #define __HostMessages_H
 
 #include <cstdint>
+#include "Common.h"
 #include "StreamingObj.h"
 #include "SysStatus.h"
 #include "PcrProtocol.h"
@@ -14,16 +15,8 @@ enum ErrCode: uint32_t
     kNoError = 0,
 	kDeviceCommErr,
 	kRunInProgressErr,
-	kInvalidCmdParams,
-	kMemoryMappingErr,
-};
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-enum PidType : uint32_t
-{
-    kTemperature,
-    kCurrent
+    kInvalidCmdParamsErr,
+    kWriteToFlashErr
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -266,9 +259,6 @@ public:
     GetPidParamsRes()
         :HostMsg(MakeObjId('G', 'P', 'i', 'd'))
         , _nPidType(kTemperature)
-        , _nPGain(0)
-        , _nIGain(0)
-        , _nDGain(0)
     {
     }
 
@@ -276,22 +266,16 @@ public:
     {
     }
 
-    void            SetType(PidType n)      { _nPidType = n; }
-    PidType         GetType()               { return _nPidType; }
-    void            SetPGain(uint32_t n)    { _nPGain = n; }
-    uint32_t        GetPGain()              { return _nPGain; }
-    void            SetIGain(uint32_t n)    { _nIGain = n; }
-    uint32_t        GetIGain()              { return _nIGain; }
-    void            SetDGain(uint32_t n)    { _nDGain = n; }
-    uint32_t        GetDGain()              { return _nDGain; }
+    void            SetType(PidType n)                  { _nPidType = n; }
+    PidType         GetType()                           { return _nPidType; }
+    void            SetPidParams(const PidParams& p)    { _pidParams = p; }
+    PidParams       GetPidParams() const                { return _pidParams; }
 
     virtual uint32_t GetStreamSize() const
     {
         uint32_t nSize = HostMsg::GetStreamSize();
         nSize += sizeof(_nPidType);
-        nSize += sizeof(_nPGain);
-        nSize += sizeof(_nIGain);
-        nSize += sizeof(_nDGain);
+        nSize += _pidParams.GetStreamSize();
         return nSize;
     }
 
@@ -301,9 +285,8 @@ public:
         uint32_t*   pSrc = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
 
         _nPidType   = (PidType)swap_uint32(*pSrc++);
-        _nPGain     = swap_uint32(*pSrc++);
-        _nIGain     = swap_uint32(*pSrc++);
-        _nDGain     = swap_uint32(*pSrc++);
+        _pidParams.operator<<((uint8_t*)pSrc);
+        pSrc += _pidParams.GetStreamSize() / sizeof(pSrc[0]);
     }
 
     virtual void     operator>>(uint8_t* pData)
@@ -312,18 +295,15 @@ public:
         uint32_t*   pDst = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
 
         *pDst++ = swap_uint32(_nPidType);
-        *pDst++ = swap_uint32(_nPGain);
-        *pDst++ = swap_uint32(_nIGain);
-        *pDst++ = swap_uint32(_nDGain);
+        _pidParams.operator>>((uint8_t*)pDst);
+        pDst += _pidParams.GetStreamSize() / sizeof(pDst[0]);
     }
 
 protected:
 
 private:
     PidType         _nPidType;
-    uint32_t        _nPGain;
-    uint32_t        _nIGain;
-    uint32_t        _nDGain;
+    PidParams       _pidParams;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -341,8 +321,8 @@ public:
     {
     }
 
-    void            SetType(PidType n)      { _nPidType = n; }
-    PidType         GetType()               { return _nPidType; }
+    void            SetType(PidType n)                  { _nPidType = n; }
+    PidType         GetType() const                     { return _nPidType; }
 
     virtual uint32_t GetStreamSize() const
     {
@@ -371,6 +351,7 @@ protected:
 
 private:
     PidType         _nPidType;
+    PidParams       _pidParams;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -811,9 +792,6 @@ public:
     SetPidParamsReq()
         :HostMsg(MakeObjId('S', 'P', 'i', 'd'))
 		, _nPidType(PidType::kTemperature)
-		, _nKp(0)
-		, _nKi(0)
-        , _nKd(0)
     {
     }
 
@@ -821,22 +799,16 @@ public:
     {
     }
     
-	void        SetType(PidType n)      { _nPidType = n; }
-	PidType	    GetType()               { return _nPidType; }
-	void        SetPGain(uint32_t n)    { _nKp = n; }
-	uint32_t    GetPGain()              { return _nKp; }
-	void        SetIGain(uint32_t n)    { _nKi = n; }
-	uint32_t    GetIGain()              { return _nKi; }
-	void        SetDGain(uint32_t n)    { _nKd = n; }
-	uint32_t    GetDGain()              { return _nKd; }
+    void        SetType(PidType n)                  { _nPidType = n; }
+    PidType     GetType()                           { return _nPidType; }
+    void        SetPidParams(const PidParams& p)    { _pidParams = p; }
+    PidParams   GetPidParams() const                { return _pidParams; }
 
 	virtual uint32_t GetStreamSize() const
 	{
 		int nSize = HostMsg::GetStreamSize();
 		nSize += sizeof(_nPidType);
-		nSize += sizeof(_nKp);
-		nSize += sizeof(_nKi);
-		nSize += sizeof(_nKd);
+		nSize += _pidParams.GetStreamSize();
 		return nSize;
 	}
 
@@ -844,10 +816,9 @@ public:
     {
         HostMsg::operator<<(pData);
 		uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_nPidType	= (PidType)swap_uint32(*pSrc++);
-		_nKp		= swap_uint32(*pSrc++);
-		_nKi		= swap_uint32(*pSrc++);
-		_nKd		= swap_uint32(*pSrc++);
+		_nPidType	    = (PidType)swap_uint32(*pSrc++);
+		_pidParams.operator<<((uint8_t*)pSrc);
+		pSrc            += _pidParams.GetStreamSize() / sizeof(pSrc[0]);
 	}
 
     virtual void     operator>>(uint8_t* pData)
@@ -855,18 +826,15 @@ public:
 		HostMsg::operator>>(pData);
 		uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
 		*pDst++ = swap_uint32(_nPidType);
-		*pDst++ = swap_uint32(_nKp);
-		*pDst++ = swap_uint32(_nKi);
-		*pDst++ = swap_uint32(_nKd);
+        _pidParams.operator>>((uint8_t*)pDst);
+        pDst            += _pidParams.GetStreamSize() / sizeof(pDst[0]);;
 	}
 
 protected:
   
 private:
     PidType     _nPidType;
-    uint32_t    _nKp;
-    uint32_t    _nKi;
-    uint32_t    _nKd;
+    PidParams   _pidParams;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
