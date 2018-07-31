@@ -11,7 +11,7 @@
 
 enum DllErrors : int
 {
-	kNoError = 0,
+//	kNoError = 0,
 	kSiteNotConnected = 1000
 };
 
