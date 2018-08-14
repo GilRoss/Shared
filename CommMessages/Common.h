@@ -19,7 +19,7 @@ struct OpticsRec
 {
 public:
     uint32_t    _nTimeTag_ms;
-    uint32_t    _nCycleIdx;
+    uint32_t    _nCycleNum;
     uint32_t    _nLedIdx;
     uint32_t    _nDetectorIdx;
     uint32_t    _nDarkRead;

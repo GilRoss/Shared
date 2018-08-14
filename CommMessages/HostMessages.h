@@ -10,13 +10,15 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-enum ErrCode: uint32_t
+enum ErrCode : int
 {
     kNoError = 0,
 	kDeviceCommErr,
 	kRunInProgressErr,
     kInvalidCmdParamsErr,
-    kWriteToFlashErr
+    kWriteToFlashErr,
+	kSiteNotConnectedErr,
+	kFileNotFound
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -133,6 +135,8 @@ class GetOpticsRecsReq : public HostMsg
 public:
 	GetOpticsRecsReq()
 		:HostMsg(MakeObjId('G', 'O', 'p', 't'))
+		, _nFirstRecToReadIdx(0)
+		, _nMaxRecsToRead(0)
 	{
 	}
 
@@ -140,19 +144,16 @@ public:
 	{
 	}
 
-	void        SetSiteIdx(uint32_t n)          { _nSiteIdx = n; }
-	uint32_t	GetSiteIdx() const  	        { return _nSiteIdx; }
 	void    	SetFirstRecToReadIdx(uint32_t n){ _nFirstRecToReadIdx = n; }
 	uint32_t	GetFirstRecToReadIdx() const  	{ return _nFirstRecToReadIdx; }
-	void    	SetNumRecsToRead(uint32_t n)    { _nNumRecsToRead = n; }
-	uint32_t	GetNumRecsToRead() const  	    { return _nNumRecsToRead; }
+	void    	SetMaxRecsToRead(uint32_t n)    { _nMaxRecsToRead = n; }
+	uint32_t	GetMaxRecsToRead() const  	    { return _nMaxRecsToRead; }
 
 	virtual uint32_t GetStreamSize() const
 	{
 		uint32_t nSize = HostMsg::GetStreamSize();
-		nSize += sizeof(_nSiteIdx);
 		nSize += sizeof(_nFirstRecToReadIdx);
-		nSize += sizeof(_nNumRecsToRead);
+		nSize += sizeof(_nMaxRecsToRead);
 		return nSize;
 	}
 
@@ -160,26 +161,23 @@ public:
 	{
 		HostMsg::operator<<(pData);
 		uint32_t*	pSrc = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
-        _nSiteIdx		        = swap_uint32(*pSrc++);
         _nFirstRecToReadIdx	    = swap_uint32(*pSrc++);
-        _nNumRecsToRead		    = swap_uint32(*pSrc++);
+		_nMaxRecsToRead			= swap_uint32(*pSrc++);
 	}
 
 	virtual void     operator>>(uint8_t* pData)
 	{
 		HostMsg::operator>>(pData);
 		uint32_t*	pDst = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
-        *pDst++ = swap_uint32(_nSiteIdx);
         *pDst++ = swap_uint32(_nFirstRecToReadIdx);
-        *pDst++ = swap_uint32(_nNumRecsToRead);
+        *pDst++ = swap_uint32(_nMaxRecsToRead);
 	}
 
 protected:
 
 private:
-	uint32_t    _nSiteIdx;
 	uint32_t    _nFirstRecToReadIdx;
-	uint32_t    _nNumRecsToRead;
+	uint32_t    _nMaxRecsToRead;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -218,7 +216,7 @@ public:
 		for (int i = 0; i < (int)_arOpticsRecs.size(); i++)
 		{
 			_arOpticsRecs[i]._nTimeTag_ms		= swap_uint32(*pSrc++);
-			_arOpticsRecs[i]._nCycleIdx	        = swap_uint32(*pSrc++);
+			_arOpticsRecs[i]._nCycleNum	        = swap_uint32(*pSrc++);
 			_arOpticsRecs[i]._nDarkRead		    = swap_uint32(*pSrc++);
 			_arOpticsRecs[i]._nIlluminatedRead	= swap_uint32(*pSrc++);
 			_arOpticsRecs[i]._nShuttleTemp_mC	= swap_uint32(*pSrc++);
@@ -236,7 +234,7 @@ public:
 		for (int i = 0; i < (int)_arOpticsRecs.size(); i++)
 		{
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nTimeTag_ms);
-			*pDst++ = swap_uint32(_arOpticsRecs[i]._nCycleIdx);
+			*pDst++ = swap_uint32(_arOpticsRecs[i]._nCycleNum);
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nDarkRead);
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nIlluminatedRead);
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nShuttleTemp_mC);
@@ -356,6 +354,58 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+class GetThermalRecsReq : public HostMsg
+{
+public:
+	GetThermalRecsReq()
+		:HostMsg(MakeObjId('G', 'T', 'h', 'm'))
+		, _nFirstRecToReadIdx(0)
+		, _nMaxRecsToRead(0)
+	{
+	}
+
+	virtual ~GetThermalRecsReq()
+	{
+	}
+
+	void    	SetFirstRecToReadIdx(uint32_t n) { _nFirstRecToReadIdx = n; }
+	uint32_t	GetFirstRecToReadIdx() const { return _nFirstRecToReadIdx; }
+	void    	SetMaxRecsToRead(uint32_t n) { _nMaxRecsToRead = n; }
+	uint32_t	GetMaxRecsToRead() const { return _nMaxRecsToRead; }
+
+	virtual uint32_t GetStreamSize() const
+	{
+		uint32_t nSize = HostMsg::GetStreamSize();
+		nSize += sizeof(_nFirstRecToReadIdx);
+		nSize += sizeof(_nMaxRecsToRead);
+		return nSize;
+	}
+
+	virtual void     operator<<(const uint8_t* pData)
+	{
+		HostMsg::operator<<(pData);
+		uint32_t*	pSrc = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
+		_nFirstRecToReadIdx = swap_uint32(*pSrc++);
+		_nMaxRecsToRead = swap_uint32(*pSrc++);
+	}
+
+	virtual void     operator>>(uint8_t* pData)
+	{
+		HostMsg::operator>>(pData);
+		uint32_t*	pDst = (uint32_t*)(&pData[HostMsg::GetStreamSize()]);
+		*pDst++ = swap_uint32(_nFirstRecToReadIdx);
+		*pDst++ = swap_uint32(_nMaxRecsToRead);
+	}
+
+protected:
+
+private:
+	uint32_t    _nFirstRecToReadIdx;
+	uint32_t    _nMaxRecsToRead;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 class GetThermalRecsRes : public HostMsg
 {
 public:
@@ -428,7 +478,6 @@ class LoadPcrProtocolReq : public HostMsg
 public:
     LoadPcrProtocolReq()
         :HostMsg(MakeObjId('L', 'd', 'P', 'r'))
-        ,_nSiteIdx(0)
     {
     }
 
@@ -436,14 +485,12 @@ public:
     {
     }
     
-    void                SetSiteIdx(uint32_t nSiteIdx)		{_nSiteIdx = nSiteIdx;}
-    uint32_t            GetSiteIdx() const					{return _nSiteIdx;}
     void                SetPcrProtocol(const PcrProtocol& p){_pcrProtocol = p;}
     const PcrProtocol&  GetPcrProtocol()                    {return _pcrProtocol;}
 
 	virtual uint32_t GetStreamSize() const
 	{
-		return HostMsg::GetStreamSize() + sizeof(_nSiteIdx) + _pcrProtocol.GetStreamSize();
+		return HostMsg::GetStreamSize() + _pcrProtocol.GetStreamSize();
 	}
 
     virtual void     operator<<(const uint8_t* pData)
@@ -461,7 +508,6 @@ public:
 protected:
   
 private:
-    uint32_t        _nSiteIdx;
     PcrProtocol     _pcrProtocol;
 };
 

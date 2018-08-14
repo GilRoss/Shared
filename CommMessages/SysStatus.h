@@ -19,7 +19,7 @@ public:
         , _bCaptureCameraImage(false)
         , _nCameraIdx(0)
         , _nSegmentIdx(0)
-        , _nCycle(0)
+        , _nCycleNum(0)
         , _nStepIdx(0)
         , _nRunTimer_ms(0)
         , _nStepTimer_ms(0)
@@ -46,7 +46,7 @@ public:
         _bCaptureCameraImage= swap_uint32(*pSrc++) != 0;
         _nCameraIdx         = swap_uint32(*pSrc++);
         _nSegmentIdx        = swap_uint32(*pSrc++);
-        _nCycle             = swap_uint32(*pSrc++);
+		_nCycleNum			= swap_uint32(*pSrc++);
         _nStepIdx           = swap_uint32(*pSrc++);
         _nRunTimer_ms       = swap_uint32(*pSrc++);
         _nStepTimer_ms      = swap_uint32(*pSrc++);
@@ -65,7 +65,7 @@ public:
         *pDst++ = swap_uint32(_bCaptureCameraImage ? 1 : 0);
         *pDst++ = swap_uint32(_nCameraIdx);
         *pDst++ = swap_uint32(_nSegmentIdx);
-        *pDst++ = swap_uint32(_nCycle);
+        *pDst++ = swap_uint32(_nCycleNum);
         *pDst++ = swap_uint32(_nStepIdx);
         *pDst++ = swap_uint32(_nRunTimer_ms);
         *pDst++ = swap_uint32(_nStepTimer_ms);
@@ -91,8 +91,8 @@ public:
     uint32_t    GetStableTimer() const                  { return _nStableTimer_ms; }
     void        SetSegmentIdx(uint32_t nIdx)            { _nSegmentIdx = nIdx; }
     uint32_t    GetSegmentIdx() const                   { return _nSegmentIdx; }
-    void        SetCycle(uint32_t nCyc)                 {_nCycle = nCyc;}
-    uint32_t    GetCycle() const                        {return _nCycle;}
+    void        SetCycleNum(uint32_t nCyc)              { _nCycleNum = nCyc;}
+    uint32_t    GetCycleNum() const                     {return _nCycleNum;}
     void        SetStepIdx(uint32_t nIdx)               {_nStepIdx = nIdx;}
     uint32_t    GetStepIdx() const                      {return _nStepIdx;}
     void        SetStepTimer(uint32_t nTime)            {_nStepTimer_ms = nTime;}
@@ -119,14 +119,14 @@ public:
     
     void        NextCycle()
                 {
-                    uint32_t nextCycle = GetCycle() + 1;
+                    uint32_t nextCycle = GetCycleNum() + 1;
                     ResetForNewStep();
-                    SetCycle(nextCycle);
+                    SetCycleNum(nextCycle);
                 }
     
     void        NextSegment()
                 {
-                    _nCycle = 0;
+					_nCycleNum = 0;
                     uint32_t nextSegment = GetSegmentIdx() + 1;
                     ResetForNewStep();
                     SetSegmentIdx(nextSegment);
@@ -149,7 +149,7 @@ public:
                     ResetForNewStep();
                     _bRunning = false;
                     _bPaused = false;
-                    _nCycle = 0;
+					_nCycleNum = 0;
                     _nSegmentIdx = 0;
                     _nRunTimer_ms = 0;
                     _nNumThermalRecs = 0;
@@ -166,7 +166,7 @@ private:
     bool            _bTempStable;
     uint32_t        _nStableTimer_ms;
     uint32_t        _nSegmentIdx;
-    uint32_t        _nCycle;
+    uint32_t        _nCycleNum;
     uint32_t        _nStepIdx;
     uint32_t        _nRunTimer_ms;
     uint32_t        _nStepTimer_ms;
@@ -181,7 +181,9 @@ private:
 class SysStatus : public StreamingObj
 {
 public:    
-    SysStatus(uint32_t nNumSites = 1)
+	std::vector<SiteStatus>       _arSiteStatus;
+	
+	SysStatus(uint32_t nNumSites = 1)
         :StreamingObj(MakeObjId('S', 'y', 's', 'S'))
         ,_arSiteStatus(nNumSites)
     {
@@ -238,7 +240,6 @@ public:
 protected:
   
 private:
-    std::vector<SiteStatus>       _arSiteStatus;
 };
 
 #endif // __SysStatus_H
