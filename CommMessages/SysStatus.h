@@ -36,7 +36,7 @@ public:
 	virtual uint32_t GetStreamSize() const
 	{
         uint32_t nSize = StreamingObj::GetStreamSize();
-        nSize += 13 * sizeof(uint32_t);
+        nSize += 15 * sizeof(uint32_t);
 		return nSize;
 	}
 
@@ -149,8 +149,11 @@ public:
     
     void        ResetForNewStep()
                 {
+                    _bPaused = false;
                     _bCaptureCameraImage = false;
                     _nCameraIdx = 0;
+                    _nCameraExposure = 0;
+                    _nLedIntensity = 0;
                     _bTempStable = false;
                     _nStableTimer_ms = 0;
                     _nStepIdx = 0;
