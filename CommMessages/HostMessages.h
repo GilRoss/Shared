@@ -982,16 +982,16 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-class PauseRunReq : public HostMsg
+class SetPauseRunReq : public HostMsg
 {
 public:
-    PauseRunReq()
+	SetPauseRunReq()
         :HostMsg(MakeObjId('P', 'a', 'u', 's'))
         ,_nSiteIdx(0)
     {
     }
 
-    virtual ~PauseRunReq()
+    virtual ~SetPauseRunReq()
     {
     }
 
