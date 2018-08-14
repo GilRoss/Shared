@@ -22,7 +22,7 @@ public:
         , _nLedIdx(0)
         , _nLedIntensity(0)
         , _nSegmentIdx(0)
-        , _nCycleNum(0)
+        , _nCycleNum(1)
         , _nStepIdx(0)
         , _nRunTimer_ms(0)
         , _nStepTimer_ms(0)
@@ -141,7 +141,7 @@ public:
     
     void        NextSegment()
                 {
-					_nCycleNum = 0;
+					_nCycleNum = 1;
                     uint32_t nextSegment = GetSegmentIdx() + 1;
                     ResetForNewStep();
                     SetSegmentIdx(nextSegment);
@@ -168,7 +168,7 @@ public:
                     ResetForNewStep();
                     _bRunning = false;
                     _bPaused = false;
-					_nCycleNum = 0;
+					_nCycleNum = 1;
                     _nSegmentIdx = 0;
                     _nRunTimer_ms = 0;
                     _nNumThermalRecs = 0;
