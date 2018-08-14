@@ -152,7 +152,6 @@ public:
                     _bPaused = false;
                     _bCaptureCameraImage = false;
                     _nCameraIdx = 0;
-                    _nCameraExposure = 0;
                     _nLedIntensity = 0;
                     _bTempStable = false;
                     _nStableTimer_ms = 0;
@@ -162,7 +161,6 @@ public:
                     _nOpticsDetectorExposureTime_us = 0;
                     _nLedIdx = 0;
                     _nLedIntensity = 0;
-
                 }
 
     void        ResetForNewRun()
