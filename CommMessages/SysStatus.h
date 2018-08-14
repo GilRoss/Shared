@@ -18,6 +18,9 @@ public:
         , _bPaused(false)
         , _bCaptureCameraImage(false)
         , _nCameraIdx(0)
+        , _nOpticsDetectorExposureTime_us(0)
+        , _nLedIdx(0)
+        , _nLedIntensity(0)
         , _nSegmentIdx(0)
         , _nCycleNum(0)
         , _nStepIdx(0)
@@ -45,6 +48,9 @@ public:
         _bPaused            = swap_uint32(*pSrc++) != 0;
         _bCaptureCameraImage= swap_uint32(*pSrc++) != 0;
         _nCameraIdx         = swap_uint32(*pSrc++);
+        _nOpticsDetectorExposureTime_us = swap_uint32(*pSrc++);
+        _nLedIdx            = swap_uint32(*pSrc++);
+        _nLedIntensity      = swap_uint32(*pSrc++);
         _nSegmentIdx        = swap_uint32(*pSrc++);
 		_nCycleNum			= swap_uint32(*pSrc++);
         _nStepIdx           = swap_uint32(*pSrc++);
@@ -64,6 +70,9 @@ public:
         *pDst++ = swap_uint32(_bPaused ? 1 : 0);
         *pDst++ = swap_uint32(_bCaptureCameraImage ? 1 : 0);
         *pDst++ = swap_uint32(_nCameraIdx);
+        *pDst++ = swap_uint32(_nOpticsDetectorExposureTime_us);
+        *pDst++ = swap_uint32(_nLedIdx);
+        *pDst++ = swap_uint32(_nLedIntensity);
         *pDst++ = swap_uint32(_nSegmentIdx);
         *pDst++ = swap_uint32(_nCycleNum);
         *pDst++ = swap_uint32(_nStepIdx);
@@ -85,6 +94,12 @@ public:
     bool        GetCaptureCameraImageFlg() const        {return _bCaptureCameraImage;}
     void        SetCameraIdx(uint32_t nIdx)             {_nCameraIdx = nIdx;}
     uint32_t    GetCameraIdx() const                    {return _nCameraIdx;}
+    void        SetOpticsDetectorExposureTime(uint32_t n){_nOpticsDetectorExposureTime_us = n;}
+    uint32_t    GetOpticsDetectorExposureTime() const    {return _nOpticsDetectorExposureTime_us;}
+    void        SetLedIdx(uint32_t nIdx)                {_nLedIdx = nIdx;}
+    uint32_t    GetLedIdx() const                       {return _nLedIdx;}
+    void        SetLedIntensity(uint32_t n)             {_nLedIntensity = n;}
+    uint32_t    GetLedIntensity() const                 {return _nLedIntensity;}
     void        SetTempStableFlg(bool b)                {_bTempStable = b;}
     bool        GetTempStableFlg() const                {return _bTempStable;}
     void        SetStableTimer(uint32_t t)              { _nStableTimer_ms = t; }
@@ -141,6 +156,9 @@ public:
                     _nStepIdx = 0;
                     _nStepTimer_ms = 0;
                     _nHoldTimer_ms = 0;
+                    _nOpticsDetectorExposureTime_us = 0;
+                    _nLedIdx = 0;
+                    _nLedIntensity = 0;
 
                 }
 
@@ -163,6 +181,9 @@ private:
     bool            _bPaused;
     bool            _bCaptureCameraImage;
     uint32_t        _nCameraIdx;
+    uint32_t        _nOpticsDetectorExposureTime_us;
+    uint32_t        _nLedIdx;
+    uint32_t        _nLedIntensity;
     bool            _bTempStable;
     uint32_t        _nStableTimer_ms;
     uint32_t        _nSegmentIdx;
