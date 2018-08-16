@@ -36,7 +36,22 @@ public:
 	virtual uint32_t GetStreamSize() const
 	{
         uint32_t nSize = StreamingObj::GetStreamSize();
-        nSize += 15 * sizeof(uint32_t);
+		nSize += sizeof(_bRunning);
+		nSize += sizeof(_bPaused);
+		nSize += sizeof(_bCaptureCameraImage);
+		nSize += sizeof(_nCameraIdx);
+		nSize += sizeof(_nOpticsDetectorExposureTime_us);
+		nSize += sizeof(_nLedIdx);
+		nSize += sizeof(_nLedIntensity);
+		nSize += sizeof(_nSegmentIdx);
+		nSize += sizeof(_nCycleNum);
+		nSize += sizeof(_nStepIdx);
+		nSize += sizeof(_nRunTimer_ms);
+		nSize += sizeof(_nStepTimer_ms);
+		nSize += sizeof(_nHoldTimer_ms);
+		nSize += sizeof(_nTemperature_mC);
+		nSize += sizeof(_nNumThermalRecs);
+		nSize += sizeof(_nNumOpticsRecs);
 		return nSize;
 	}
 
@@ -203,24 +218,20 @@ private:
 class SysStatus : public StreamingObj
 {
 public:    
-	std::vector<SiteStatus>       _arSiteStatus;
+	SiteStatus       _siteStatus;
 	
 	SysStatus(uint32_t nNumSites = 1)
         :StreamingObj(MakeObjId('S', 'y', 's', 'S'))
-        ,_arSiteStatus(nNumSites)
     {
     }
 
-	uint32_t			GetNumSites() const { return (uint32_t)_arSiteStatus.size(); }
-	void            	SetSiteStatus(uint32_t nSiteIdx, const SiteStatus& ss)  { _arSiteStatus[nSiteIdx] = ss; }
-	const SiteStatus&	GetSiteStatus(uint32_t nSiteIdx) const { return _arSiteStatus[nSiteIdx]; }
+	void		SetSiteStatus(const SiteStatus& ss)  { _siteStatus = ss; }
+	SiteStatus	GetSiteStatus() const { return _siteStatus; }
 
 	virtual uint32_t GetStreamSize() const
 	{
 		uint32_t nSize = StreamingObj::GetStreamSize();
-		nSize += sizeof(uint32_t);
-		for (int i = 0; i < (int)_arSiteStatus.size(); i++)
-			nSize += _arSiteStatus[i].GetStreamSize();
+		nSize += _siteStatus.GetStreamSize();
 
 		return nSize;
 	}
@@ -229,34 +240,14 @@ public:
     {
         StreamingObj::operator<<(pData);
         uint32_t*   pSrc = (uint32_t*)(pData + StreamingObj::GetStreamSize());
-		uint32_t nNumSites = swap_uint32(*pSrc++);
-		_arSiteStatus.resize(nNumSites);
-		for (int i = 0; i < (int)nNumSites; i++)
-		{
-			_arSiteStatus[i] << (uint8_t*)pSrc;
-			pSrc = (uint32_t*)((uint8_t*)pSrc + _arSiteStatus[i].GetStreamSize());
-		}
+		_siteStatus << (uint8_t*)pSrc;
     }
 
     virtual void     operator>>(uint8_t* pData)
     {
 		StreamingObj::operator>>(pData);
         uint32_t* pDst = (uint32_t*)(pData + StreamingObj::GetStreamSize());
-		*pDst++ = swap_uint32((uint32_t)_arSiteStatus.size());
-		for (int i = 0; i < (int)_arSiteStatus.size(); i++)
-		{
-			_arSiteStatus[i] >> (uint8_t*)pDst;
-			pDst = (uint32_t*)((uint8_t*)pDst + _arSiteStatus[i].GetStreamSize());
-		}
-	}
-
-	SysStatus& operator=(const SysStatus& rhs)
-	{
-		_arSiteStatus.resize(rhs.GetNumSites());
-		for (int i = 0; i < (int)_arSiteStatus.size(); i++)
-			_arSiteStatus[i] = rhs.GetSiteStatus(i);
-
-		return *this;
+		_siteStatus >> (uint8_t*)pDst;
 	}
 
 protected:

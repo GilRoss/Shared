@@ -890,7 +890,6 @@ class StartRunReq : public HostMsg
 public:
     StartRunReq()
         :HostMsg(MakeObjId('S', 'R', 'u', 'n'))
-        ,_nSiteIdx(0)
         ,_bMeerstetterPid(true)
     {
     }
@@ -899,16 +898,13 @@ public:
     {
     }
     
-    void        SetSiteIdx(uint32_t nSiteIdx)   {_nSiteIdx = nSiteIdx;}
-    uint32_t    GetSiteIdx() const              {return _nSiteIdx;}    
     void        SetMeerstetterPidFlg(bool b)    {_bMeerstetterPid = b;}
     bool        GetMeerstetterPidFlg() const    {return _bMeerstetterPid;}    
 
 	virtual uint32_t GetStreamSize() const
 	{
 		int nSize = HostMsg::GetStreamSize();
-		nSize += sizeof(_nSiteIdx);
-		nSize += sizeof(uint32_t);	//_bMeerstetterPid
+		nSize += sizeof(uint32_t);  //_bMeerstetterPid
 		return nSize;
 	}
 
@@ -916,7 +912,6 @@ public:
     {
         HostMsg::operator<<(pData);
 		uint32_t* pSrc = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_nSiteIdx			= swap_uint32(*pSrc++);
 		_bMeerstetterPid	= (swap_uint32(*pSrc++) != 0);
 	}
 
@@ -924,60 +919,13 @@ public:
     {
 		HostMsg::operator>>(pData);
 		uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		*pDst++ = swap_uint32(_nSiteIdx);
 		*pDst++ = swap_uint32(_bMeerstetterPid ? 1 : 0);
 	}
 
 protected:
   
 private:
-    uint32_t    _nSiteIdx;
-    uint32_t    _bMeerstetterPid;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-class StopRunReq : public HostMsg
-{
-public:
-    StopRunReq()
-        :HostMsg(MakeObjId('S', 't', 'o', 'p'))
-        ,_nSiteIdx(0)
-    {
-    }
-
-    virtual ~StopRunReq()
-    {
-    }
-    
-    void        SetSiteIdx(uint32_t nSiteIdx)   {_nSiteIdx = nSiteIdx;}
-    uint32_t    GetSiteIdx() const              {return _nSiteIdx;}
-
-	virtual uint32_t GetStreamSize() const
-	{
-		int nSize = HostMsg::GetStreamSize();
-		nSize += sizeof(_nSiteIdx);
-		return nSize;
-	}
-
-    virtual void     operator<<(const uint8_t* pData)
-    {
-        HostMsg::operator<<(pData);
-		uint32_t* pSrc = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_nSiteIdx			= swap_uint32(*pSrc++);
-	}
-
-    virtual void     operator>>(uint8_t* pData)
-    {
-		HostMsg::operator>>(pData);
-		uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		*pDst++ = swap_uint32(_nSiteIdx);
-	}
-
-protected:
-  
-private:
-    uint32_t    _nSiteIdx;
+    bool    _bMeerstetterPid;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
