@@ -16,7 +16,6 @@ extern "C" int	AMPDETECTLIBRARY_API AD_Uninitialize();
 //General routines.
 extern "C" bool AMPDETECTLIBRARY_API AD_IsConnected(int nSiteIdx);
 extern "C" int	AMPDETECTLIBRARY_API AD_GetNumExpectedSites();
-extern "C" int	AMPDETECTLIBRARY_API AD_SetTemperatureSetpoint(int nSiteIdx, int nSetpoint_mC);
 
 // Update this DLLs cache of the system status. All routines in this section return values from this cache.
 extern "C" int  AMPDETECTLIBRARY_API AD_UpdateSysStatusCache(int nSiteIdx);
@@ -66,6 +65,9 @@ extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedThermalRecChan2(int nSiteIdx, in
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedThermalRecChan3(int nSiteIdx, int nIdx);
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedThermalRecChan4(int nSiteIdx, int nIdx);
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedThermalRecCurrent(int nSiteIdx, int nIdx);
+
+//Manual control routines.
+extern "C" int	AMPDETECTLIBRARY_API AD_SetTemperatureSetpoint(int nSiteIdx, int nSetpoint_mC);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ErrCode	MsgTransaction(int nSiteIdx, HostMsg& request, HostMsg* pResponse);
