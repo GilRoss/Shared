@@ -10,7 +10,7 @@
 #include "HostMessages.h"
 
 //Initialization routines.
-extern "C" int	AMPDETECTLIBRARY_API AD_Initialize(int nNumExpectedSites, int nFirstSiteId);
+extern "C" int	AMPDETECTLIBRARY_API AD_Initialize(int nFirstSiteId, int nNumExpectedSites);
 extern "C" int	AMPDETECTLIBRARY_API AD_Uninitialize();
 
 //General routines.
