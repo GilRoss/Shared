@@ -12,6 +12,7 @@
 //Initialization routines.
 extern "C" int	AMPDETECTLIBRARY_API AD_Initialize(int nFirstSiteId, int nNumExpectedSites);
 extern "C" int	AMPDETECTLIBRARY_API AD_Uninitialize();
+extern "C" bool	AMPDETECTLIBRARY_API AD_GetInitializedFlg();
 
 //General routines.
 extern "C" bool AMPDETECTLIBRARY_API AD_IsConnected(int nSiteIdx);
