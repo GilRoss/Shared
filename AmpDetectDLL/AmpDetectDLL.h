@@ -44,8 +44,9 @@ extern "C" int  AMPDETECTLIBRARY_API AD_PauseRun(int nSiteIdx);
 
 //Optics routines.
 extern "C" int	AMPDETECTLIBRARY_API AD_SetOpticsLed(int nSiteIdx, int nLedIdx, int nLedIntensity, int nLedDuration_us);
-extern "C" int	AMPDETECTLIBRARY_API AD_GetDiodeValue(int nSiteIdx, int nDiodeIdx, int* pDiodeValue);
-extern "C" int	AMPDETECTLIBRARY_API AD_ReadOptics(int nSiteIdx, int nDiodeIdx, int nLedIdx, int nLedIntensity, int nIntegrationTime_us, int* pDiodeValue);
+extern "C" int	AMPDETECTLIBRARY_API AD_GetDiodeValue(int nSiteIdx, int nDiodeIdx, int* data);
+extern "C" int	AMPDETECTLIBRARY_API AD_GetLedAdcValue(int nSiteIdx, int nLedAdcIdx, int* data);
+extern "C" int	AMPDETECTLIBRARY_API AD_ReadOptics(int nSiteIdx, int nDiodeIdx, int nLedIdx, int nLedIntensity, int nIntegrationTime_us, int* nDiodeValue, int* nLedMonitor, int* nLedTemp, int* nDiodeTemp);
 extern "C" int	AMPDETECTLIBRARY_API AD_UpdateOpticalRecCache(int nSiteIdx, int nFirstRecToReadIdx, int nMaxRecsToRead, int* pNumRecsReturned);
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedOpticalRecTimeTag(int nSiteIdx, int nIdx);
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedOpticalRecCycleNum(int nSiteIdx, int nIdx);
