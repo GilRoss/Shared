@@ -584,6 +584,7 @@ class GetOpticsDiodeReq : public HostMsg
 public:
     GetOpticsDiodeReq()
         :HostMsg(MakeObjId('G', 'O', 'D', 'i'))
+        ,_nSiteIdx(0)
         ,_nDiodeIdx(0)
     {
     }
@@ -592,12 +593,15 @@ public:
     {
     }
 
-    void        SetDiodeIdx(uint32_t nDiodeIdx)       {_nDiodeIdx = nDiodeIdx;}
-    uint32_t    GetDiodeIdx() const                  {return _nDiodeIdx;}
+    void        SetSiteIdx(uint32_t nSiteIdx)       {_nSiteIdx = nSiteIdx;}
+    uint32_t    GetSiteIdx() const                  {return _nSiteIdx;}
+    void        SetDiodeIdx(uint32_t nDiodeIdx)     {_nDiodeIdx = nDiodeIdx;}
+    uint32_t    GetDiodeIdx() const                 {return _nDiodeIdx;}
 
     virtual uint32_t GetStreamSize() const
     {
         int nSize = HostMsg::GetStreamSize();
+        nSize += sizeof(_nSiteIdx);
         nSize += sizeof(_nDiodeIdx);
         return nSize;
     }
@@ -606,6 +610,7 @@ public:
     {
         HostMsg::operator<<(pData);
         uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        _nSiteIdx       = swap_uint32(*pSrc++);
         _nDiodeIdx       = swap_uint32(*pSrc++);
     }
 
@@ -613,12 +618,14 @@ public:
     {
         HostMsg::operator>>(pData);
         uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        *pDst++ = swap_uint32(_nSiteIdx);
         *pDst++ = swap_uint32(_nDiodeIdx);
     }
 
 protected:
 
 private:
+    uint32_t    _nSiteIdx;
     uint32_t    _nDiodeIdx;
 };
 
@@ -674,6 +681,7 @@ class GetOpticsLedAdcReq : public HostMsg
 public:
     GetOpticsLedAdcReq()
         :HostMsg(MakeObjId('G', 'O', 'L', 'e'))
+        ,_nSiteIdx(0)
         ,_nLedAdcIdx(0)
     {
     }
@@ -682,12 +690,15 @@ public:
     {
     }
 
+    void        SetSiteIdx(uint32_t nSiteIdx)       {_nSiteIdx = nSiteIdx;}
+    uint32_t    GetSiteIdx() const                  {return _nSiteIdx;}
     void        SetLedAdcIdx(uint32_t nLedAdcIdx)       {_nLedAdcIdx = nLedAdcIdx;}
     uint32_t    GetLedAdcIdx() const                  {return _nLedAdcIdx;}
 
     virtual uint32_t GetStreamSize() const
     {
         int nSize = HostMsg::GetStreamSize();
+        nSize += sizeof(_nSiteIdx);
         nSize += sizeof(_nLedAdcIdx);
         return nSize;
     }
@@ -696,6 +707,7 @@ public:
     {
         HostMsg::operator<<(pData);
         uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        _nSiteIdx       = swap_uint32(*pSrc++);
         _nLedAdcIdx       = swap_uint32(*pSrc++);
     }
 
@@ -703,12 +715,14 @@ public:
     {
         HostMsg::operator>>(pData);
         uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        *pDst++ = swap_uint32(_nSiteIdx);
         *pDst++ = swap_uint32(_nLedAdcIdx);
     }
 
 protected:
 
 private:
+    uint32_t    _nSiteIdx;
     uint32_t    _nLedAdcIdx;
 };
 ///////////////////////////////////////////////////////////////////////////////
@@ -763,6 +777,7 @@ class ReadOpticsReq : public HostMsg
 public:
     ReadOpticsReq()
         :HostMsg(MakeObjId('R', 'O', 'p', 't'))
+        ,_nSiteIdx(0)
         ,_nLedIdx(0)
         ,_nDiodeIdx(0)
         ,_nLedIntensity(0)
@@ -774,6 +789,8 @@ public:
     {
     }
 
+    void        SetSiteIdx(uint32_t nSiteIdx)       {_nSiteIdx = nSiteIdx;}
+    uint32_t    GetSiteIdx() const                  {return _nSiteIdx;}
     void        SetLedIdx(uint32_t nLedIdx)       {_nLedIdx = nLedIdx;}
     uint32_t    GetLedIdx() const                  {return _nLedIdx;}
     void        SetDiodeIdx(uint32_t nDiodeIdx)       {_nDiodeIdx = nDiodeIdx;}
@@ -786,6 +803,7 @@ public:
     virtual uint32_t GetStreamSize() const
     {
         int nSize = HostMsg::GetStreamSize();
+        nSize += sizeof(_nSiteIdx);
         nSize += sizeof(_nLedIdx);
         nSize += sizeof(_nDiodeIdx);
         nSize += sizeof(_nLedIntensity);
@@ -797,6 +815,7 @@ public:
     {
         HostMsg::operator<<(pData);
         uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        _nSiteIdx               = swap_uint32(*pSrc++);
         _nLedIdx                = swap_uint32(*pSrc++);
         _nDiodeIdx              = swap_uint32(*pSrc++);
         _nLedIntensity          = swap_uint32(*pSrc++);
@@ -807,6 +826,7 @@ public:
     {
         HostMsg::operator>>(pData);
         uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        *pDst++ = swap_uint32(_nSiteIdx);
         *pDst++ = swap_uint32(_nLedIdx);
         *pDst++ = swap_uint32(_nDiodeIdx);
         *pDst++ = swap_uint32(_nLedIntensity);
@@ -816,6 +836,7 @@ public:
 protected:
 
 private:
+    uint32_t    _nSiteIdx;
     uint32_t    _nLedIdx;
     uint32_t    _nDiodeIdx;
     uint32_t    _nLedIntensity;
@@ -845,9 +866,9 @@ public:
     void        SetActiveLedMonitorValue(uint32_t nLedMonitor)  {_nLedMonitor = nLedMonitor;}
     uint32_t    GetActiveLedMonitorValue() const                {return _nLedMonitor;}
     void        SetActiveLedTemp(uint32_t nLedTemp)             {_nLedTemp = nLedTemp;}
-    uint32_t    GetActiveLedTemp()                              {return _nLedTemp;}
+    uint32_t    GetActiveLedTemp() const                        {return _nLedTemp;}
     void        SetActiveDiodeTemp(uint32_t nDiodeTemp)         {_nDiodeTemp = nDiodeTemp;}
-    uint32_t    GetActiveDiodeTemp()                            {return _nDiodeTemp;}
+    uint32_t    GetActiveDiodeTemp() const                      {return _nDiodeTemp;}
 
     virtual uint32_t GetStreamSize() const
     {
