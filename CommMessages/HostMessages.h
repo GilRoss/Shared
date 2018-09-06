@@ -10,7 +10,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-enum ErrCode : int
+enum ErrCode : uint32_t
 {
     kNoError = 0,
 	kDeviceCommErr,
@@ -1021,7 +1021,7 @@ class StartRunReq : public HostMsg
 public:
     StartRunReq()
         :HostMsg(MakeObjId('S', 'R', 'u', 'n'))
-        ,_bMeerstetterPid(true)
+        ,_bMeerstetterPid(0)
     {
     }
 
@@ -1029,13 +1029,13 @@ public:
     {
     }
     
-    void        SetMeerstetterPidFlg(bool b)    {_bMeerstetterPid = b;}
-    bool        GetMeerstetterPidFlg() const    {return _bMeerstetterPid;}    
+    void        SetMeerstetterPidFlg(bool b)    {_bMeerstetterPid = b ? 1 : 0;}
+    bool        GetMeerstetterPidFlg() const    {return _bMeerstetterPid != 0;}    
 
 	virtual uint32_t GetStreamSize() const
 	{
 		int nSize = HostMsg::GetStreamSize();
-		nSize += sizeof(uint32_t);  //_bMeerstetterPid
+		nSize += sizeof(_bMeerstetterPid);
 		return nSize;
 	}
 
@@ -1043,20 +1043,20 @@ public:
     {
         HostMsg::operator<<(pData);
 		uint32_t* pSrc = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_bMeerstetterPid	= (swap_uint32(*pSrc++) != 0);
+		_bMeerstetterPid	= swap_uint32(*pSrc++);
 	}
 
     virtual void     operator>>(uint8_t* pData)
     {
 		HostMsg::operator>>(pData);
 		uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		*pDst++ = swap_uint32(_bMeerstetterPid ? 1 : 0);
+		*pDst++ = swap_uint32(_bMeerstetterPid);
 	}
 
 protected:
   
 private:
-    bool    _bMeerstetterPid;
+	uint32_t    _bMeerstetterPid;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
