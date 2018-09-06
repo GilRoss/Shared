@@ -14,14 +14,16 @@ class SiteStatus : public StreamingObj
 public:
     SiteStatus()
         :StreamingObj(MakeObjId('S', 't', 'e', 'S'))
-		, _bRunning(false)
-        , _bPaused(false)
-        , _bCaptureCameraImage(false)
+		, _bRunning(0)
+        , _bPaused(0)
+        , _bCaptureCameraImage(0)
         , _nCameraIdx(0)
         , _nOpticsDetectorExposureTime_us(0)
         , _nLedIdx(0)
         , _nLedIntensity(0)
-        , _nSegmentIdx(0)
+		, _bTempStable(0)
+		, _nStableTimer_ms(0)
+		, _nSegmentIdx(0)
         , _nCycleNum(1)
         , _nStepIdx(0)
         , _nRunTimer_ms(0)
@@ -43,6 +45,8 @@ public:
 		nSize += sizeof(_nOpticsDetectorExposureTime_us);
 		nSize += sizeof(_nLedIdx);
 		nSize += sizeof(_nLedIntensity);
+		nSize += sizeof(_bTempStable);
+		nSize += sizeof(_nStableTimer_ms);
 		nSize += sizeof(_nSegmentIdx);
 		nSize += sizeof(_nCycleNum);
 		nSize += sizeof(_nStepIdx);
@@ -50,8 +54,8 @@ public:
 		nSize += sizeof(_nStepTimer_ms);
 		nSize += sizeof(_nHoldTimer_ms);
 		nSize += sizeof(_nTemperature_mC);
-		nSize += sizeof(_nNumThermalRecs);
 		nSize += sizeof(_nNumOpticsRecs);
+		nSize += sizeof(_nNumThermalRecs);
 		return nSize;
 	}
 
@@ -59,54 +63,58 @@ public:
     {
         StreamingObj::operator<<(pData);
         uint32_t*   pSrc = (uint32_t*)(pData + StreamingObj::GetStreamSize());
-        _bRunning           = swap_uint32(*pSrc++) != 0;
-        _bPaused            = swap_uint32(*pSrc++) != 0;
-        _bCaptureCameraImage= swap_uint32(*pSrc++) != 0;
+        _bRunning           = swap_uint32(*pSrc++);
+        _bPaused            = swap_uint32(*pSrc++);
+        _bCaptureCameraImage= swap_uint32(*pSrc++);
         _nCameraIdx         = swap_uint32(*pSrc++);
         _nOpticsDetectorExposureTime_us = swap_uint32(*pSrc++);
         _nLedIdx            = swap_uint32(*pSrc++);
         _nLedIntensity      = swap_uint32(*pSrc++);
-        _nSegmentIdx        = swap_uint32(*pSrc++);
+		_bTempStable		= swap_uint32(*pSrc++);
+		_nStableTimer_ms	= swap_uint32(*pSrc++);
+		_nSegmentIdx		= swap_uint32(*pSrc++);
 		_nCycleNum			= swap_uint32(*pSrc++);
         _nStepIdx           = swap_uint32(*pSrc++);
         _nRunTimer_ms       = swap_uint32(*pSrc++);
         _nStepTimer_ms      = swap_uint32(*pSrc++);
 		_nHoldTimer_ms	    = swap_uint32(*pSrc++);
 		_nTemperature_mC    = swap_uint32(*pSrc++);
+		_nNumOpticsRecs		= swap_uint32(*pSrc++);
 		_nNumThermalRecs    = swap_uint32(*pSrc++);
-        _nNumOpticsRecs     = swap_uint32(*pSrc++);
   	}
 
     virtual void     operator>>(uint8_t* pData)
     {
         StreamingObj::operator>>(pData);
         uint32_t*   pDst = (uint32_t*)(pData + StreamingObj::GetStreamSize());
-        *pDst++ = swap_uint32(_bRunning ? 1 : 0);
-        *pDst++ = swap_uint32(_bPaused ? 1 : 0);
-        *pDst++ = swap_uint32(_bCaptureCameraImage ? 1 : 0);
+        *pDst++ = swap_uint32(_bRunning);
+        *pDst++ = swap_uint32(_bPaused);
+        *pDst++ = swap_uint32(_bCaptureCameraImage);
         *pDst++ = swap_uint32(_nCameraIdx);
         *pDst++ = swap_uint32(_nOpticsDetectorExposureTime_us);
         *pDst++ = swap_uint32(_nLedIdx);
         *pDst++ = swap_uint32(_nLedIntensity);
-        *pDst++ = swap_uint32(_nSegmentIdx);
-        *pDst++ = swap_uint32(_nCycleNum);
+		*pDst++ = swap_uint32(_bTempStable);
+		*pDst++ = swap_uint32(_nStableTimer_ms);
+		*pDst++ = swap_uint32(_nSegmentIdx);
+		*pDst++ = swap_uint32(_nCycleNum);
         *pDst++ = swap_uint32(_nStepIdx);
         *pDst++ = swap_uint32(_nRunTimer_ms);
         *pDst++ = swap_uint32(_nStepTimer_ms);
 		*pDst++ = swap_uint32(_nHoldTimer_ms);
 		*pDst++ = swap_uint32(_nTemperature_mC);
-		*pDst++ = swap_uint32(_nNumThermalRecs);
 		*pDst++ = swap_uint32(_nNumOpticsRecs);
+		*pDst++ = swap_uint32(_nNumThermalRecs);
 	}
     
 	void        SetTemperature(uint32_t n)		        { _nTemperature_mC = n; }
 	uint32_t    GetTemperature() const			        { return _nTemperature_mC; }
-    void        SetRunningFlg(bool b)                   {_bRunning = b;}
-    bool        GetRunningFlg() const                   {return _bRunning;}
-    void        SetPausedFlg(bool b)                    {_bPaused = b;}
-    bool        GetPausedFlg() const                    {return _bPaused;}
-    void        SetCaptureCameraImageFlg(bool b)        {_bCaptureCameraImage = b;}
-    bool        GetCaptureCameraImageFlg() const        {return _bCaptureCameraImage;}
+    void        SetRunningFlg(bool b)                   {_bRunning = b ? 1 : 0;}
+    bool        GetRunningFlg() const                   {return _bRunning != 0;}
+    void        SetPausedFlg(bool b)                    {_bPaused = b ? 1 : 0;}
+    bool        GetPausedFlg() const                    {return _bPaused != 0;}
+    void        SetCaptureCameraImageFlg(bool b)        {_bCaptureCameraImage = b ? 1 : 0;}
+    bool        GetCaptureCameraImageFlg() const        {return _bCaptureCameraImage != 0;}
     void        SetCameraIdx(uint32_t nIdx)             {_nCameraIdx = nIdx;}
     uint32_t    GetCameraIdx() const                    {return _nCameraIdx;}
     void        SetOpticsDetectorExposureTime(uint32_t n){_nOpticsDetectorExposureTime_us = n;}
@@ -115,8 +123,8 @@ public:
     uint32_t    GetLedIdx() const                       {return _nLedIdx;}
     void        SetLedIntensity(uint32_t n)             {_nLedIntensity = n;}
     uint32_t    GetLedIntensity() const                 {return _nLedIntensity;}
-    void        SetTempStableFlg(bool b)                {_bTempStable = b;}
-    bool        GetTempStableFlg() const                {return _bTempStable;}
+    void        SetTempStableFlg(bool b)                {_bTempStable = b ? 1 : 0;}
+    bool        GetTempStableFlg() const                {return _bTempStable != 0;}
     void        SetStableTimer(uint32_t t)              { _nStableTimer_ms = t; }
     uint32_t    GetStableTimer() const                  { return _nStableTimer_ms; }
     void        SetSegmentIdx(uint32_t nIdx)            { _nSegmentIdx = nIdx; }
@@ -193,14 +201,14 @@ public:
 protected:
   
 private:
-    bool            _bRunning;
-    bool            _bPaused;
-    bool            _bCaptureCameraImage;
+	uint32_t        _bRunning;
+	uint32_t        _bPaused;
+	uint32_t        _bCaptureCameraImage;
     uint32_t        _nCameraIdx;
     uint32_t        _nOpticsDetectorExposureTime_us;
     uint32_t        _nLedIdx;
     uint32_t        _nLedIntensity;
-    bool            _bTempStable;
+	uint32_t        _bTempStable;
     uint32_t        _nStableTimer_ms;
     uint32_t        _nSegmentIdx;
     uint32_t        _nCycleNum;
