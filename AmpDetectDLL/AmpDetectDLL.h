@@ -25,6 +25,8 @@ extern "C" bool AMPDETECTLIBRARY_API AD_GetCachedPausedFlg(int nSiteIdx);
 extern "C" bool AMPDETECTLIBRARY_API AD_GetCachedCaptureCameraImageFlg(int nSiteIdx);
 extern "C" bool AMPDETECTLIBRARY_API AD_GetCachedTempStableFlg(int nSiteIdx);
 extern "C" int  AMPDETECTLIBRARY_API AD_GetCachedCameraIdx(int nSiteIdx);
+extern "C" int  AMPDETECTLIBRARY_API AD_GetCachedOpticsDetectorExposureTime(int nSiteIdx);
+extern "C" int  AMPDETECTLIBRARY_API AD_GetCachedLedIntensity(int nSiteIdx);
 extern "C" int  AMPDETECTLIBRARY_API AD_GetCachedStableTimer(int nSiteIdx);
 extern "C" int  AMPDETECTLIBRARY_API AD_GetCachedSegmentIdx(int nSiteIdx);
 extern "C" int  AMPDETECTLIBRARY_API AD_GetCachedCycleNum(int nSiteIdx);

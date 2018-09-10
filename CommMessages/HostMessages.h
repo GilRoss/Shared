@@ -1076,10 +1076,10 @@ public:
 
     void        SetSiteIdx(uint32_t nSiteIdx)       {_nSiteIdx = nSiteIdx;}
     uint32_t    GetSiteIdx() const                  {return _nSiteIdx;}
-    void        SetPausedFlg(bool b)                {_bPaused = b;}
-    bool        GetPausedFlg() const                {return _bPaused;}
-    void        SetCaptureCameraImageFlg(bool b)    {_bCaptureCameraImage = b;}
-    bool        GetCaptureCameraImageFlg() const    {return _bCaptureCameraImage;}
+    void        SetPausedFlg(bool b)                {_bPaused = b ? 1 : 0;}
+    bool        GetPausedFlg() const                {return _bPaused != 0;}
+    void        SetCaptureCameraImageFlg(bool b)    {_bCaptureCameraImage = b ? 1 : 0;}
+    bool        GetCaptureCameraImageFlg() const    {return _bCaptureCameraImage != 0;}
 
     virtual uint32_t GetStreamSize() const
     {
@@ -1095,8 +1095,8 @@ public:
         HostMsg::operator<<(pData);
         uint32_t* pSrc = (uint32_t*)(pData + HostMsg::GetStreamSize());
         _nSiteIdx           = swap_uint32(*pSrc++);
-        _bPaused            = (swap_uint32(*pSrc++) != 0);
-        _bCaptureCameraImage = (swap_uint32(*pSrc++) != 0);
+        _bPaused            = swap_uint32(*pSrc++);
+        _bCaptureCameraImage = swap_uint32(*pSrc++);
     }
 
     virtual void     operator>>(uint8_t* pData)
@@ -1104,8 +1104,8 @@ public:
         HostMsg::operator>>(pData);
         uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
         *pDst++ = swap_uint32(_nSiteIdx);
-        *pDst++ = swap_uint32(_bPaused ? 1 : 0);
-        *pDst++ = swap_uint32(_bCaptureCameraImage ? 1 : 0);
+        *pDst++ = swap_uint32(_bPaused);
+        *pDst++ = swap_uint32(_bCaptureCameraImage);
 
     }
 
