@@ -233,8 +233,9 @@ public:
     {
     }
 
-	void		SetSiteStatus(const SiteStatus& ss)  { _siteStatus = ss; }
-	SiteStatus	GetSiteStatus() const { return _siteStatus; }
+	void		    SetSiteStatus(const SiteStatus& ss)  { _siteStatus = ss; }
+    SiteStatus      GetSiteStatus() const { return _siteStatus; }
+    SiteStatus*     GetSiteStatusPtr() { return &_siteStatus; }
 
 	virtual uint32_t GetStreamSize() const
 	{
