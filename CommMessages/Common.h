@@ -56,13 +56,13 @@ enum PidType : uint32_t
 class PidParams : public StreamingObj
 {
 public:
-    PidParams()
+    PidParams(uint32_t nKp = 0, uint32_t nKi = 0, uint32_t nKd = 0, int32_t nS = 1000, int32_t nY = 0)
         : StreamingObj(MakeObjId('P', 'i', 'd','P'))
-        , _nKp(0)
-        , _nKi(0)
-        , _nKd(0)
-        , _nSlope_m(1000)
-        , _nYIntercept_m(0)
+        , _nKp(nKp)
+        , _nKi(nKi)
+        , _nKd(nKd)
+        , _nSlope_m(nS)
+        , _nYIntercept_m(nY)
     {
     }
 
