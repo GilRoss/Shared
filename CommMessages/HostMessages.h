@@ -349,7 +349,6 @@ protected:
 
 private:
     PidType         _nPidType;
-    PidParams       _pidParams;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

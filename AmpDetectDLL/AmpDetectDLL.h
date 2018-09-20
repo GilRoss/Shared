@@ -60,8 +60,8 @@ extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedOpticalRecRefDarkRead(int nSiteI
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedOpticalRecRefIlluminatedRead(int nSiteIdx, int nIdx);
 
 //Thermal routines.
-extern "C" int	AMPDETECTLIBRARY_API AD_SetPidParams(int nSiteIdx, PidType nPidType, int nKp, int nKi, int nKd, int nSlope_m, int nYIntercept_m);
-extern "C" int	AMPDETECTLIBRARY_API AD_GetPidParams(int nSiteIdx, PidType nPidType, int* pKp, int* pKi, int* pKd, int* pSlope_m, int* pYIntercept_m);
+extern "C" int	AMPDETECTLIBRARY_API AD_SetPidParams(int nSiteIdx, PidType nPidType, float nKp, float nKi, float nKd, float nSlope_m, float nYIntercept_m);
+extern "C" int	AMPDETECTLIBRARY_API AD_GetPidParams(int nSiteIdx, PidType nPidType, float* pKp, float* pKi, float* pKd, float* pSlope_m, float* pYIntercept_m);
 extern "C" int	AMPDETECTLIBRARY_API AD_UpdateThermalRecCache(int nSiteIdx, int nFirstRecToReadIdx, int nMaxRecsToRead, int* pNumRecsReturned);
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedThermalRecTimeTag(int nSiteIdx, int nIdx);
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedThermalRecChan1(int nSiteIdx, int nIdx);

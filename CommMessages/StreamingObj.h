@@ -27,8 +27,42 @@ public:
 		return (val << 16) | (val >> 16);
 	}
 
+	//! Byte swap float
+	const uint8_t*	SwapFromStream(const uint8_t* pSrc, float* pVal)
+	{
+		uint8_t* pTemp = (uint8_t*)pVal;
+		pTemp[0] = pSrc[3];
+		pTemp[1] = pSrc[2];
+		pTemp[2] = pSrc[1];
+		pTemp[3] = pSrc[0];
+		return pSrc + sizeof(float);
+	}
+
+	//! Byte swap float
+	uint8_t*	SwapToStream(uint8_t* pDst, float nVal)
+	{
+		uint8_t* pTemp = (uint8_t*)&nVal;
+		pDst[0] = pTemp[3];
+		pDst[1] = pTemp[2];
+		pDst[2] = pTemp[1];
+		pDst[3] = pTemp[0];
+		return pDst + sizeof(float);
+}
+
 #elif BIG_ENDIAN
-	uint32_t swap_uint32(uint32_t val) { return val; }
+	uint32_t	swap_uint32(uint32_t val) { return val; }
+
+	const uint8_t*	SwapFromStream(const uint8_t* pSrc, float* pVal)
+	{
+		*pVal = *((float*)pSrc);
+		return pSrc + sizeof(float);
+	}
+
+	uint8_t*	SwapToStream(uint8_t* pDst, float nVal)
+	{
+		*((float*)pDst) = nVal;
+		return pDst + sizeof(float);
+	}
 #endif
 
 
