@@ -71,7 +71,9 @@ extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedThermalRecChan4(int nSiteIdx, in
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedThermalRecCurrent(int nSiteIdx, int nIdx);
 
 //Manual control routines.
+extern "C" int	AMPDETECTLIBRARY_API AD_DisableManualControl(int nSiteIdx);
 extern "C" int	AMPDETECTLIBRARY_API AD_SetTemperatureSetpoint(int nSiteIdx, int nSetpoint_mC);
+extern "C" int	AMPDETECTLIBRARY_API AD_SetCurrentSetpoint(int nSiteIdx, int nSetpoint_mA);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ErrCode	MsgTransaction(int nSiteIdx, HostMsg& request, HostMsg* pResponse);
