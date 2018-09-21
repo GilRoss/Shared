@@ -126,17 +126,4 @@ private:
 	float        _nYIntercept_m; //y = mx + b.
 };
 
-typedef struct {
-	uint8_t _nCameraIndex;
-	uint8_t _nCameraCaptureStart;
-	uint8_t _nCameraCaptureDone;
-}CameraStatus;
-
-typedef struct {
-	HANDLE hFileMap;
-	CameraStatus *camCaptureStatus;
-	char MapName[256];
-	size_t size;
-}CameraStatusHeader;
-
 #endif // __Common_H
