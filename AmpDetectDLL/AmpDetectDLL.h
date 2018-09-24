@@ -60,8 +60,10 @@ extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedOpticalRecRefDarkRead(int nSiteI
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedOpticalRecRefIlluminatedRead(int nSiteIdx, int nIdx);
 
 //Thermal routines.
-extern "C" int	AMPDETECTLIBRARY_API AD_SetPidParams(int nSiteIdx, PidType nPidType, int nKp, int nKi, int nKd, int nSlope_m, int nYIntercept_m);
-extern "C" int	AMPDETECTLIBRARY_API AD_GetPidParams(int nSiteIdx, PidType nPidType, int* pKp, int* pKi, int* pKd, int* pSlope_m, int* pYIntercept_m);
+extern "C" int	AMPDETECTLIBRARY_API AD_SetPidParams(int nSiteIdx, PidType nPidType, float nKp, float nKi, float nKd, 
+													float nSlope_m, float nYIntercept_m, float nStabilizationTolerance_C, float nStabilizationTime_A);
+extern "C" int	AMPDETECTLIBRARY_API AD_GetPidParams(int nSiteIdx, PidType nPidType, float* pKp, float* pKi,
+													float* pKd, float* pSlope_m, float* pYIntercept_m, float* pStabilizationTolerance_C, float* pStabilizationTime_A);
 extern "C" int	AMPDETECTLIBRARY_API AD_UpdateThermalRecCache(int nSiteIdx, int nFirstRecToReadIdx, int nMaxRecsToRead, int* pNumRecsReturned);
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedThermalRecTimeTag(int nSiteIdx, int nIdx);
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedThermalRecChan1(int nSiteIdx, int nIdx);
@@ -71,7 +73,9 @@ extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedThermalRecChan4(int nSiteIdx, in
 extern "C" int	AMPDETECTLIBRARY_API AD_GetCachedThermalRecCurrent(int nSiteIdx, int nIdx);
 
 //Manual control routines.
-extern "C" int	AMPDETECTLIBRARY_API AD_SetTemperatureSetpoint(int nSiteIdx, int nSetpoint_mC);
+extern "C" int	AMPDETECTLIBRARY_API AD_DisableManualControl(int nSiteIdx);
+extern "C" int	AMPDETECTLIBRARY_API AD_SetTemperatureSetpoint(int nSiteIdx, int nSetpoint_C);
+extern "C" int	AMPDETECTLIBRARY_API AD_SetCurrentSetpoint(int nSiteIdx, int nSetpoint_A);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ErrCode	MsgTransaction(int nSiteIdx, HostMsg& request, HostMsg* pResponse);

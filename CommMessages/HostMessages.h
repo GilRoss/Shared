@@ -357,7 +357,6 @@ protected:
 
 private:
     PidType         _nPidType;
-    PidParams       _pidParams;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -919,29 +918,70 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-class SetManControlSetpointReq : public HostMsg
+class SetManControlCurrentReq : public HostMsg
 {
 public:
-    SetManControlSetpointReq()
-        :HostMsg(MakeObjId('M', 'c', 'S', 'p'))
-        ,_nSiteIdx(0)
+	SetManControlCurrentReq()
+		:HostMsg(MakeObjId('S', 'C', 'u', 'r'))
+		, _nSetpoint_mA(0)
+	{
+	}
+
+	virtual ~SetManControlCurrentReq()
+	{
+	}
+
+	void        SetSetpoint(int32_t n) { _nSetpoint_mA = n; }
+	int32_t     GetSetpoint() const { return _nSetpoint_mA; }
+
+	virtual uint32_t GetStreamSize() const
+	{
+		int nSize = HostMsg::GetStreamSize();
+		nSize += sizeof(_nSetpoint_mA);
+		return nSize;
+	}
+
+	virtual void     operator<<(const uint8_t* pData)
+	{
+		HostMsg::operator<<(pData);
+		uint32_t* pSrc = (uint32_t*)(pData + HostMsg::GetStreamSize());
+		_nSetpoint_mA = swap_uint32(*pSrc++);
+	}
+
+	virtual void     operator>>(uint8_t* pData)
+	{
+		HostMsg::operator>>(pData);
+		uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
+		*pDst++ = swap_uint32(_nSetpoint_mA);
+	}
+
+protected:
+
+private:
+	int32_t     _nSetpoint_mA;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+class SetManControlTemperatureReq : public HostMsg
+{
+public:
+	SetManControlTemperatureReq()
+        :HostMsg(MakeObjId('S', 'T', 'm', 'p'))
         ,_nSetpoint_mC(0)
     {
     }
 
-    virtual ~SetManControlSetpointReq()
+    virtual ~SetManControlTemperatureReq()
     {
     }
     
-    void        SetSiteIdx(uint32_t nSiteIdx)   {_nSiteIdx = nSiteIdx;}
-    uint32_t    GetSiteIdx() const              {return _nSiteIdx;}    
     void        SetSetpoint(int32_t n)          {_nSetpoint_mC = n;}
     int32_t     GetSetpoint() const             {return _nSetpoint_mC;}
 
 	virtual uint32_t GetStreamSize() const
 	{
 		int nSize = HostMsg::GetStreamSize();
-		nSize += sizeof(_nSiteIdx);
 		nSize += sizeof(_nSetpoint_mC);
 		return nSize;
 	}
@@ -950,7 +990,6 @@ public:
     {
         HostMsg::operator<<(pData);
 		uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		_nSiteIdx	    = swap_uint32(*pSrc++);
 		_nSetpoint_mC	= swap_uint32(*pSrc++);
 	}
 
@@ -958,14 +997,12 @@ public:
     {
 		HostMsg::operator>>(pData);
 		uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
-		*pDst++ = swap_uint32(_nSiteIdx);
 		*pDst++ = swap_uint32(_nSetpoint_mC);
 	}
 
 protected:
   
 private:
-    uint32_t    _nSiteIdx;
     int32_t     _nSetpoint_mC;
 };
 

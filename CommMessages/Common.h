@@ -58,13 +58,16 @@ enum PidType : uint32_t
 class PidParams : public StreamingObj
 {
 public:
-    PidParams(uint32_t nKp = 0, uint32_t nKi = 0, uint32_t nKd = 0, int32_t nS = 1000, int32_t nY = 0)
-        : StreamingObj(MakeObjId('P', 'i', 'd','P'))
+    PidParams(float nKp = 0, float nKi = 0, float nKd = 0, float nS = 1000, float nY = 0, float nStabilizationTolerance_C = 0, float nStabilizationTime_s = 0)
+        : StreamingObj(MakeObjId('P', 'i', 'd','P'), 2)
         , _nKp(nKp)
         , _nKi(nKi)
         , _nKd(nKd)
-        , _nSlope_m(nS)
-        , _nYIntercept_m(nY)
+        , _nSlope(nS)
+        , _nYIntercept(nY)
+		, _nStabilizationTolerance_C(nStabilizationTolerance_C)
+		, _nStabilizationTime_s(nStabilizationTime_s)
+
     {
     }
 
@@ -72,61 +75,77 @@ public:
     {
     }
 
-    void            SetKp(uint32_t n)           { _nKp = n; }
-    uint32_t        GetKp() const               { return _nKp; }
-    void            SetKi(uint32_t n)           { _nKi = n; }
-    uint32_t        GetKi() const               { return _nKi; }
-    void            SetKd(uint32_t n)           { _nKd = n; }
-    uint32_t        GetKd() const               { return _nKd; }
-    void            SetSlope(int32_t n)         { _nSlope_m = n; }
-    int32_t         GetSlope() const            { return _nSlope_m; }
-    void            SetYIntercept(int32_t n)    { _nYIntercept_m = n; }
-    int32_t         GetYIntercept() const       { return _nYIntercept_m; }
+    void         SetKp(float n)           { _nKp = n; }
+	float        GetKp() const            { return _nKp; }
+    void         SetKi(float n)           { _nKi = n; }
+	float        GetKi() const            { return _nKi; }
+    void         SetKd(float n)           { _nKd = n; }
+	float        GetKd() const            { return _nKd; }
+    void         SetSlope(float n)        { _nSlope = n; }
+	float        GetSlope() const         { return _nSlope; }
+	void         SetYIntercept(float n)				{ _nYIntercept = n; }
+	float        GetYIntercept() const				{ return _nYIntercept; }
+	void         SetStabilizationTolerance(float n) { _nStabilizationTolerance_C = n; }
+	float        GetStabilizationTolerance() const	{ return _nStabilizationTolerance_C; }
+	void         SetStabilizationTime(float n)		{ _nStabilizationTime_s = n; }
+	float        GetStabilizationTime() const		{ return _nStabilizationTime_s; }
 
-    virtual uint32_t GetStreamSize() const
+	virtual uint32_t GetStreamSize() const
     {
         uint32_t nSize = StreamingObj::GetStreamSize();
         nSize += sizeof(_nKp);
         nSize += sizeof(_nKi);
         nSize += sizeof(_nKd);
-        nSize += sizeof(_nSlope_m);
-        nSize += sizeof(_nYIntercept_m);
-        return nSize;
+        nSize += sizeof(_nSlope);
+		nSize += sizeof(_nYIntercept);
+        nSize += sizeof(_nStabilizationTolerance_C);
+        nSize += sizeof(_nStabilizationTime_s);
+		return nSize;
     }
 
     virtual void     operator<<(const uint8_t* pData)
     {
         StreamingObj::operator<<(pData);
-        uint32_t*   pSrc = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
+        const uint8_t*   pSrc = &pData[StreamingObj::GetStreamSize()];
 
-        _nKp            = swap_uint32(*pSrc++);
-        _nKi            = swap_uint32(*pSrc++);
-        _nKd            = swap_uint32(*pSrc++);
-        _nSlope_m       = swap_uint32(*pSrc++);
-        _nYIntercept_m  = swap_uint32(*pSrc++);
-    }
+		pSrc = SwapFromStream(pSrc, &_nKp);
+		pSrc = SwapFromStream(pSrc, &_nKi);
+		pSrc = SwapFromStream(pSrc, &_nKd);
+		pSrc = SwapFromStream(pSrc, &_nSlope);
+		pSrc = SwapFromStream(pSrc, &_nYIntercept);
+
+        //If version 2 or above, overwrite default.
+		if (GetVersion() >= 2)
+		{
+            pSrc = SwapFromStream(pSrc, &_nStabilizationTolerance_C);
+            pSrc = SwapFromStream(pSrc, &_nStabilizationTime_s);
+		}
+	}
 
     virtual void     operator>>(uint8_t* pData)
     {
         StreamingObj::operator>>(pData);
-        uint32_t*   pDst = (uint32_t*)(&pData[StreamingObj::GetStreamSize()]);
+        uint8_t*   pDst = &pData[StreamingObj::GetStreamSize()];
 
-        *pDst++ = swap_uint32(_nKp);
-        *pDst++ = swap_uint32(_nKi);
-        *pDst++ = swap_uint32(_nKd);
-        *pDst++ = swap_uint32(_nSlope_m);
-        *pDst++ = swap_uint32(_nYIntercept_m);
-    }
+        pDst = SwapToStream(pDst, _nKp);
+		pDst = SwapToStream(pDst, _nKi);
+		pDst = SwapToStream(pDst, _nKd);
+		pDst = SwapToStream(pDst, _nSlope);
+		pDst = SwapToStream(pDst, _nYIntercept);
+		pDst = SwapToStream(pDst, _nStabilizationTolerance_C);
+		pDst = SwapToStream(pDst, _nStabilizationTime_s);
+	}
 
 protected:
 
 private:
-    uint32_t        _nKp;
-    uint32_t        _nKi;
-    uint32_t        _nKd;
-    int32_t         _nSlope_m;      //y = mx + b.
-    int32_t         _nYIntercept_m; //y = mx + b.
+    float _nKp;
+	float _nKi;
+	float _nKd;
+	float _nSlope;      //y = mx + b.
+	float _nYIntercept; //y = mx + b.
+	float _nStabilizationTolerance_C;
+	float _nStabilizationTime_s;
 };
-
 
 #endif // __Common_H
