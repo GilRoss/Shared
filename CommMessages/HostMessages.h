@@ -217,11 +217,15 @@ public:
 		{
 			_arOpticsRecs[i]._nTimeTag_ms		= swap_uint32(*pSrc++);
 			_arOpticsRecs[i]._nCycleNum	        = swap_uint32(*pSrc++);
+			_arOpticsRecs[i]._nLedIdx           = swap_uint32(*pSrc++);
+			_arOpticsRecs[i]._nDetectorIdx      = swap_uint32(*pSrc++);
 			_arOpticsRecs[i]._nDarkRead		    = swap_uint32(*pSrc++);
 			_arOpticsRecs[i]._nIlluminatedRead	= swap_uint32(*pSrc++);
 			_arOpticsRecs[i]._nShuttleTemp_mC	= swap_uint32(*pSrc++);
 			_arOpticsRecs[i]._nRefIlluminatedRead = swap_uint32(*pSrc++);
 			_arOpticsRecs[i]._nRefDarkRead      = swap_uint32(*pSrc++);
+			_arOpticsRecs[i]._nActiveLedTemp_mC = swap_uint32(*pSrc++);
+			_arOpticsRecs[i]._nActiveDiodeTemp_mC = swap_uint32(*pSrc++);
 		}
 	}
 
@@ -235,11 +239,15 @@ public:
 		{
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nTimeTag_ms);
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nCycleNum);
+			*pDst++ = swap_uint32(_arOpticsRecs[i]._nLedIdx);
+			*pDst++ = swap_uint32(_arOpticsRecs[i]._nDetectorIdx);
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nDarkRead);
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nIlluminatedRead);
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nShuttleTemp_mC);
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nRefIlluminatedRead);
 			*pDst++ = swap_uint32(_arOpticsRecs[i]._nRefDarkRead);
+			*pDst++ = swap_uint32(_arOpticsRecs[i]._nActiveLedTemp_mC);
+			*pDst++ = swap_uint32(_arOpticsRecs[i]._nActiveDiodeTemp_mC);
 		}
 	}
 

@@ -26,6 +26,8 @@ public:
     uint32_t    _nIlluminatedRead;
     uint32_t    _nRefDarkRead;
     uint32_t    _nRefIlluminatedRead;
+    uint32_t    _nActiveLedTemp_mC;
+    uint32_t    _nActiveDiodeTemp_mC;
     int32_t     _nShuttleTemp_mC;
 };
 
