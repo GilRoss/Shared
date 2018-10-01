@@ -21,7 +21,8 @@ public:
         , _nOpticsDetectorExposureTime_us(0)
         , _nLedIdx(0)
         , _nLedIntensity(0)
-		, _bTempStable(0)
+        , _bTempStable(0)
+        , _bFullPower(1)
 		, _nStableTimer_ms(0)
 		, _nSegmentIdx(0)
         , _nCycleNum(1)
@@ -45,7 +46,8 @@ public:
 		nSize += sizeof(_nOpticsDetectorExposureTime_us);
 		nSize += sizeof(_nLedIdx);
 		nSize += sizeof(_nLedIntensity);
-		nSize += sizeof(_bTempStable);
+        nSize += sizeof(_bTempStable);
+        nSize += sizeof(_bFullPower);
 		nSize += sizeof(_nStableTimer_ms);
 		nSize += sizeof(_nSegmentIdx);
 		nSize += sizeof(_nCycleNum);
@@ -70,7 +72,8 @@ public:
         _nOpticsDetectorExposureTime_us = swap_uint32(*pSrc++);
         _nLedIdx            = swap_uint32(*pSrc++);
         _nLedIntensity      = swap_uint32(*pSrc++);
-		_bTempStable		= swap_uint32(*pSrc++);
+        _bTempStable        = swap_uint32(*pSrc++);
+        _bFullPower         = swap_uint32(*pSrc++);
 		_nStableTimer_ms	= swap_uint32(*pSrc++);
 		_nSegmentIdx		= swap_uint32(*pSrc++);
 		_nCycleNum			= swap_uint32(*pSrc++);
@@ -94,7 +97,8 @@ public:
         *pDst++ = swap_uint32(_nOpticsDetectorExposureTime_us);
         *pDst++ = swap_uint32(_nLedIdx);
         *pDst++ = swap_uint32(_nLedIntensity);
-		*pDst++ = swap_uint32(_bTempStable);
+        *pDst++ = swap_uint32(_bTempStable);
+        *pDst++ = swap_uint32(_bFullPower);
 		*pDst++ = swap_uint32(_nStableTimer_ms);
 		*pDst++ = swap_uint32(_nSegmentIdx);
 		*pDst++ = swap_uint32(_nCycleNum);
@@ -125,6 +129,8 @@ public:
     uint32_t    GetLedIntensity() const                 {return _nLedIntensity;}
     void        SetTempStableFlg(bool b)                {_bTempStable = b ? 1 : 0;}
     bool        GetTempStableFlg() const                {return _bTempStable != 0;}
+    void        SetFullPowerFlg(bool b)                 {_bFullPower = b ? 1 : 0;}
+    bool        GetFullPowerFlg() const                 {return _bFullPower != 0;}
     void        SetStableTimer(uint32_t t)              { _nStableTimer_ms = t; }
     uint32_t    GetStableTimer() const                  { return _nStableTimer_ms; }
     void        SetSegmentIdx(uint32_t nIdx)            { _nSegmentIdx = nIdx; }
@@ -177,6 +183,7 @@ public:
                     _nCameraIdx = 0;
                     _nLedIntensity = 0;
                     _bTempStable = false;
+                    _bFullPower = true;
                     _nStableTimer_ms = 0;
                     _nStepIdx = 0;
                     _nStepTimer_ms = 0;
@@ -208,7 +215,8 @@ private:
     uint32_t        _nOpticsDetectorExposureTime_us;
     uint32_t        _nLedIdx;
     uint32_t        _nLedIntensity;
-	uint32_t        _bTempStable;
+    uint32_t        _bTempStable;
+    uint32_t        _bFullPower;
     uint32_t        _nStableTimer_ms;
     uint32_t        _nSegmentIdx;
     uint32_t        _nCycleNum;
