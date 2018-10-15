@@ -918,6 +918,51 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+class StartIntegrationReq : public HostMsg
+{
+public:
+    StartIntegrationReq()
+        :HostMsg(MakeObjId('S', 't', 'I', 'n'))
+        ,_nDuration_us(0)
+    {
+    }
+
+    virtual ~StartIntegrationReq()
+    {
+    }
+
+    void        SetDuration(uint32_t nDur_us)       {_nDuration_us = nDur_us;}
+    uint32_t    GetDuration() const                 {return _nDuration_us;}
+
+    virtual uint32_t GetStreamSize() const
+    {
+        int nSize = HostMsg::GetStreamSize();
+        nSize += sizeof(_nDuration_us);
+        return nSize;
+    }
+
+    virtual void     operator<<(const uint8_t* pData)
+    {
+        HostMsg::operator<<(pData);
+        uint32_t* pSrc  = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        _nDuration_us   = swap_uint32(*pSrc++);
+    }
+
+    virtual void     operator>>(uint8_t* pData)
+    {
+        HostMsg::operator>>(pData);
+        uint32_t* pDst = (uint32_t*)(pData + HostMsg::GetStreamSize());
+        *pDst++ = swap_uint32(_nDuration_us);
+    }
+
+protected:
+
+private:
+    uint32_t    _nDuration_us;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 class SetManControlCurrentReq : public HostMsg
 {
 public:
